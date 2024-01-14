@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class PieceManager : MonoBehaviour
+public class PieceManager : PlayerView
 {
     Board board;
     enum MoveStatus

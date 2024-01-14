@@ -1,12 +1,14 @@
 using UnityEngine;
+using Photon.Pun;
 public enum Side
 {
     TOP,
     BOTTOM,
 }
 
-public class Board : MonoBehaviour
+public class Board : MonoBehaviourPunCallbacks
 {
+    [SerializeField] PhotonView PV;
   
     [Range(8, 12)]
     [SerializeField] int boardX = 9;
