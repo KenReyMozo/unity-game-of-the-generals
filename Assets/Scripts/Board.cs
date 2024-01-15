@@ -1,5 +1,8 @@
 using UnityEngine;
+using Unity.Collections;
 using Photon.Pun;
+using System.Collections.Generic;
+
 public enum Side
 {
     TOP,
@@ -20,6 +23,9 @@ public class Board : MonoBehaviourPunCallbacks
 
     [SerializeField] GameObject tilePrefab;
     Tile[,] tiles;
+    List<Tile> tileListTop;
+    List<Tile> tileListBottom;
+    
 
     [SerializeField] Color availablePositionColor;
     [SerializeField] Color unavailablePositionColor;
@@ -53,10 +59,17 @@ public class Board : MonoBehaviourPunCallbacks
 
     void InitializeBoard()
     {
+        tileListTop = new List<Tile>();
+        tileListBottom = new List<Tile>();
         tiles = new Tile[boardX, boardY];
-        Vector3 _tileSize = new(tileSize, 0.5f, tileSize);
 
-           Vector3 initialPosition = transform.position;
+        Vector3 _tileSize = new(tileSize, 0.5f, tileSize);
+        Vector3 initialPosition = transform.position;
+
+
+        int maxTopY = Mathf.FloorToInt(boardY / 2) - 1;
+        int minBottomY = Mathf.FloorToInt(boardY / 2) + 1;
+
         for (int c = 0; c < boardX; c++)
         {
             Vector3 newInitialPosition = initialPosition + ((c * tileGap) * Vector3.right);
@@ -67,9 +80,15 @@ public class Board : MonoBehaviourPunCallbacks
 
                 GameObject _tile = Instantiate(tilePrefab, transform);
 
+
                 tiles[c, c1] = _tile.GetComponent<Tile>();
                 tiles[c, c1].SetupTile(newPosition, _tileSize, c, c1);
                 tiles[c, c1].SetColor(unavailablePositionColor);
+
+                if (c1 <= maxTopY)
+                    tileListTop.Add(tiles[c, c1]);
+                else if(c1 >= minBottomY)
+                    tileListBottom.Add(tiles[c, c1]);
             }
         }
     }
@@ -137,7 +156,7 @@ public class Board : MonoBehaviourPunCallbacks
         if(side == Side.TOP)
         {
             int maxY = Mathf.FloorToInt(boardY/2) - 1;
-            for(int c = 0; c < boardX; c++)
+            for (int c = 0; c < boardX; c++)
             {
                 for(int c1 = 0; c1 < boardY; c1++)
                 {
@@ -172,5 +191,37 @@ public class Board : MonoBehaviourPunCallbacks
         }
     }
 
+    public List<Tile> GetRandomTiles(int count, Side side)
+    {
 
+        List<Tile> newTileList = new();
+        List<Tile> defaultTileList = new();
+
+        if (side == Side.TOP)
+            defaultTileList = tileListTop;
+        if (side == Side.BOTTOM)
+            defaultTileList = tileListBottom;
+
+        if (defaultTileList.Count < count)
+            return null;
+
+        int requiredTilesCount = count;
+        int skipsAvailable = defaultTileList.Count - requiredTilesCount;
+
+        for (int c = 0; c < defaultTileList.Count; c++)
+        {
+            float chances = Random.Range(0f, 1f);
+            Tile tile = defaultTileList[c];
+            if (chances <= 0.3 || (skipsAvailable <= 0))
+            {
+                newTileList.Add(tile);
+            }
+            else
+            {
+                skipsAvailable--;
+            }
+        }
+
+        return newTileList;
+    }
 }

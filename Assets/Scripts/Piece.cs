@@ -5,12 +5,20 @@ public class Piece : Interactable
 
     [SerializeField] TextMeshPro pieceNameText;
     [SerializeField] Position position;
+
+
+    Vector3? currentTargetPosition;
+    [SerializeField] float moveSpeed = 2f;
+    [SerializeField] float moveElevation = 1f;
+
     Color colorSelected;
     Color colorDefault;
 
+    Tile prevTile;
     Tile currentTile;
     public Tile TargetTile { get => currentTile; private set => currentTile = value; }
     Vector3? targetTilePosition;
+    MoveStatus? moveStatus;
 
     bool isMoving;
     public bool IsMoving { get => isMoving; set => isMoving = value; }
@@ -29,6 +37,7 @@ public class Piece : Interactable
     Transform _t;
     public void OnClick(Piece selectedPiece)
     {
+        if (IsMoving) return;
         if (IsDead) {
             isSelected = true;
             return;
@@ -52,27 +61,40 @@ public class Piece : Interactable
         return this;
     }
 
+    public void SetPiece(float speed, float elevation)
+    {
+        moveSpeed = speed;
+        moveElevation = elevation;
+    }
+
     public void Fight(Piece pieceToFight)
     {
 
     }
 
-    public void MoveTo(Tile tile)
+    public void MoveTo(Tile tile, bool isSingleMove)
     {
-        if(TargetTile != null)
+        if (IsMoving) return;
+        if(TargetTile != null && isSingleMove)
+        {
             TargetTile.Piece = null;
+        }
 
         targetTilePosition = tile.transform.position;
         tile.Piece = this;
         TargetTile = tile;
+        GetPieceNewMovePosition();
     }
+
     public void Select()
     {
+        if (IsMoving) return;
         IsSelected = true;
         OnSelect();
     }
     public void Unselect()
     {
+        if (IsMoving) return;
         IsSelected = false;
         OnUnselect();
     }
@@ -104,9 +126,78 @@ public class Piece : Interactable
         IsMoving = !isWithinDistance;
         if (isWithinDistance)
         {
+            moveStatus = null;
+            currentTargetPosition = null;
             targetTilePosition = null;
             IsMoving = false;
             return;
+        }
+
+        if (moveStatus == null) return;
+        if (currentTargetPosition == null) return;
+
+        Vector3 currentPiecePosition = _t.position;
+
+        bool isCurrentTargetWithinDistance = DistanceHelper.IsWithinDistance(currentPiecePosition, (Vector3)currentTargetPosition);
+
+        if (isCurrentTargetWithinDistance)
+        {
+            GetPieceNewMovePosition();
+        }
+
+        if (currentTargetPosition == null) return;
+        _t.position = Vector3.Lerp(currentPiecePosition, (Vector3)currentTargetPosition, moveSpeed * Time.deltaTime);
+    }
+
+    void GetPieceNewMovePosition()
+    {
+        if(targetTilePosition != null)
+        {
+            bool isWithinDistance = DistanceHelper.IsWithinDistance(_t.position, (Vector3)targetTilePosition);
+            if (isWithinDistance)
+            {
+                IsMoving = false;
+                moveStatus = null;
+                return;
+            }
+            
+        }
+        if (moveStatus == MoveStatus.END)
+        {
+            targetTilePosition = null;
+            IsMoving = false;
+            moveStatus = null;
+            return;
+        }
+        if (moveStatus == null)
+        {
+            moveStatus = MoveStatus.UP;
+        }
+
+        switch (moveStatus)
+        {
+            case MoveStatus.UP:
+
+                currentTargetPosition = _t.position + (moveElevation * Vector3.up);
+                moveStatus = MoveStatus.MOVE;
+
+                break;
+            case MoveStatus.MOVE:
+
+                if (TargetTile == null) return;
+                currentTargetPosition = TargetTile.transform.position + (moveElevation * Vector3.up);
+                moveStatus = MoveStatus.DOWN;
+
+                break;
+            case MoveStatus.DOWN:
+
+                if (TargetTile == null) return;
+                currentTargetPosition = targetTilePosition;
+                moveStatus = MoveStatus.END;
+                break;
+            default:
+                moveStatus = null;
+                break;
         }
     }
 }

@@ -1,17 +1,19 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-
+using System.Collections.Generic;
+using System.Linq;
+public enum MoveStatus
+{
+    UP,
+    MOVE,
+    DOWN,
+    END,
+}
 public class PieceManager : PlayerView
 {
     Board board;
-    enum MoveStatus
-    {
-        UP,
-        MOVE,
-        DOWN,
-        END,
-    }
+ 
 
     const string PIECE_TAG = "Piece";
     const string TILE_TAG = "Tile";
@@ -79,6 +81,7 @@ public class PieceManager : PlayerView
         }
         foreach (Piece piece in myPieces)
         {
+            piece.SetPiece(moveSpeed, moveElevation);
             piece.IsFriendly = true;
         }
     }
@@ -167,12 +170,12 @@ public class PieceManager : PlayerView
                 if(selectedPiece.TargetTile != null)
                 {
                     GetPieceNewMovePosition();
-                    selectedPiece.MoveTo(tile);
+                    selectedPiece.MoveTo(tile, true);
                 }
                 else
                 {
                     currentTargetPosition = tile.transform.position;
-                    selectedPiece.MoveTo(tile);
+                    selectedPiece.MoveTo(tile, true);
                     moveStatus = MoveStatus.DOWN;
                 }
                 return;
@@ -250,17 +253,17 @@ public class PieceManager : PlayerView
         if (moveStatus == null) return;
         if (currentTargetPosition == null) return;
 
-        Vector3 currentPiecePosition = selectedPiece.transform.position;
+        //Vector3 currentPiecePosition = selectedPiece.transform.position;
 
-        bool isWithinDistance = DistanceHelper.IsWithinDistance(currentPiecePosition, (Vector3)currentTargetPosition);
+        //bool isWithinDistance = DistanceHelper.IsWithinDistance(currentPiecePosition, (Vector3)currentTargetPosition);
 
-        if (isWithinDistance)
+        //if (isWithinDistance)
         {
-            GetPieceNewMovePosition();
+            //GetPieceNewMovePosition();
         }
 
         if (currentTargetPosition == null) return;
-        selectedPiece.transform.position = Vector3.Lerp(currentPiecePosition, (Vector3)currentTargetPosition, moveSpeed * Time.deltaTime);
+        //selectedPiece.transform.position = Vector3.Lerp(currentPiecePosition, (Vector3)currentTargetPosition, moveSpeed * Time.deltaTime);
     }
 
     public void OnPressReady()
@@ -284,4 +287,43 @@ public class PieceManager : PlayerView
         }
     }
 
+    public void OnRandomizePiecePosition()
+    {
+        Piece[] availablePieces = myPieces.Where(piece => !piece.IsMoving).ToArray();
+        Debug.LogError("A"+ availablePieces.Length);
+        Debug.LogError("B"+ myPieces.Length);
+        if (availablePieces.Length != myPieces.Length) return;
+        List<Tile> tileList = board.GetRandomTiles(myPieces.Length, Side.BOTTOM);
+        if (tileList == null) return;
+        int index = 0;
+        Shuffle(tileList);
+        Shuffle(tileList);
+        Shuffle(tileList);
+        foreach(Tile tile in tileList)
+        {
+            tile.Piece = null;
+        }
+        foreach (Piece piece in myPieces)
+        {
+            Tile tile = tileList[index];
+            index++;
+            piece.MoveTo(tile, false);
+        }
+        Debug.LogError("======================= " + index);
+    }
+
+    public void Shuffle<T>(List<T> list)
+    {
+        System.Random random = new System.Random();
+
+        int n = list.Count;
+        while (n > 1)
+        {
+            n--;
+            int k = random.Next(n + 1);
+            T value = list[k];
+            list[k] = list[n];
+            list[n] = value;
+        }
+    }
 }
