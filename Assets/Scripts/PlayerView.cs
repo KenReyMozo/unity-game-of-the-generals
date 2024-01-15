@@ -3,5 +3,6 @@ using Photon.Pun;
 
 public class PlayerView : MonoBehaviour
 {
-    [SerializeField] PhotonView PV;
+    [SerializeField] protected GameObject[] toDisable;
+    [SerializeField] protected PhotonView PV;
 }

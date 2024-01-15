@@ -33,4 +33,10 @@ public class Tile : Interactable
     {
         meshRenderer.material.color = color;
     }
+
+    public Vector2Int GetCoordinateVector2()
+    {
+        Vector2Int coordinate = new Vector2Int(X, Y);
+        return coordinate;
+    }
 }

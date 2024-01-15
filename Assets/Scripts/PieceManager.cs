@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
 using System.Linq;
+using Photon.Pun;
 public enum MoveStatus
 {
     UP,
@@ -13,7 +14,8 @@ public enum MoveStatus
 public class PieceManager : PlayerView
 {
     Board board;
- 
+
+    Side side;
 
     const string PIECE_TAG = "Piece";
     const string TILE_TAG = "Tile";
@@ -72,6 +74,20 @@ public class PieceManager : PlayerView
 
     void Start()
     {
+        int playerCount = PhotonNetwork.PlayerList.Length;
+        if (playerCount == 1)
+            side = Side.BOTTOM;
+        if (playerCount == 2)
+            side = Side.TOP;
+
+        if (!PV.IsMine)
+        {
+            foreach (GameObject obj in toDisable)
+            {
+                obj.SetActive(false);
+            }
+        }
+
         playerControl.BoardControl.Select.performed += _ => OnSelectSomething();
         board = FindObjectOfType<Board>();
         if (board == null)
@@ -82,12 +98,16 @@ public class PieceManager : PlayerView
         foreach (Piece piece in myPieces)
         {
             piece.SetPiece(moveSpeed, moveElevation);
+
+            if (!PV.IsMine) return;
             piece.IsFriendly = true;
+            piece.PV = PV;
         }
     }
 
     void OnSelectSomething()
     {
+        if (!PV.IsMine) return;
         if (isReady && !hasGameStarted) return;
         if (selectedPiece != null && selectedPiece.IsMoving) return;
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -118,6 +138,7 @@ public class PieceManager : PlayerView
 
     void OnSelectPiece(Piece piece)
     {
+        if (!PV.IsMine) return;
         if (!piece.IsFriendly) return;
 
         piece.OnClick(selectedPiece);
@@ -156,6 +177,7 @@ public class PieceManager : PlayerView
 
     void OnSelectTile(Tile tile)
     {
+        if (!PV.IsMine) return;
         if (selectedPiece == null)
         {
             if (tile.Piece)
@@ -169,7 +191,7 @@ public class PieceManager : PlayerView
             {
                 if(selectedPiece.TargetTile != null)
                 {
-                    GetPieceNewMovePosition();
+                    //GetPieceNewMovePosition();
                     selectedPiece.MoveTo(tile, true);
                 }
                 else
@@ -268,6 +290,7 @@ public class PieceManager : PlayerView
 
     public void OnPressReady()
     {
+        if (!PV.IsMine) return;
         isReady = !isReady;
 
         if (isReady && selectedPiece != null)
@@ -285,19 +308,24 @@ public class PieceManager : PlayerView
         {
             buttonText.text = SET_READY_TEXT;
         }
+
+        List<Vector2> coordinaList = new();
+        foreach(Piece piece in myPieces)
+        {
+            coordinaList.Add(piece.TargetTile.GetCoordinateVector2());
+        }
+        PV.RPC(nameof(RPC_SendStartingPositions), RpcTarget.All, coordinaList, myPieces);
     }
 
     public void OnRandomizePiecePosition()
     {
+        if (!PV.IsMine) return;
         Piece[] availablePieces = myPieces.Where(piece => !piece.IsMoving).ToArray();
-        Debug.LogError("A"+ availablePieces.Length);
-        Debug.LogError("B"+ myPieces.Length);
+        board.ResetTilesPieveReference();
         if (availablePieces.Length != myPieces.Length) return;
-        List<Tile> tileList = board.GetRandomTiles(myPieces.Length, Side.BOTTOM);
+        List<Tile> tileList = board.GetRandomTiles(myPieces.Length, side);
         if (tileList == null) return;
         int index = 0;
-        Shuffle(tileList);
-        Shuffle(tileList);
         Shuffle(tileList);
         foreach(Tile tile in tileList)
         {
@@ -309,7 +337,6 @@ public class PieceManager : PlayerView
             index++;
             piece.MoveTo(tile, false);
         }
-        Debug.LogError("======================= " + index);
     }
 
     public void Shuffle<T>(List<T> list)
@@ -324,6 +351,18 @@ public class PieceManager : PlayerView
             T value = list[k];
             list[k] = list[n];
             list[n] = value;
+        }
+    }
+
+    [PunRPC]
+    public void RPC_SendStartingPositions(List<Vector2Int> coordinateList, Piece[] pieces )
+    {
+        if (PV.IsMine) return;
+        for(int c=0; c<pieces.Length; c++)
+        {
+            Tile tile = board.GetTileFromCoordinate(coordinateList[c]);
+            pieces[c].MoveTo(tile, true);
+
         }
     }
 }

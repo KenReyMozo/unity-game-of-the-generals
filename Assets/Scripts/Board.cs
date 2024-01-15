@@ -85,7 +85,7 @@ public class Board : MonoBehaviourPunCallbacks
                 tiles[c, c1].SetupTile(newPosition, _tileSize, c, c1);
                 tiles[c, c1].SetColor(unavailablePositionColor);
 
-                if (c1 <= maxTopY)
+                if (c1 < maxTopY)
                     tileListTop.Add(tiles[c, c1]);
                 else if(c1 >= minBottomY)
                     tileListBottom.Add(tiles[c, c1]);
@@ -223,5 +223,23 @@ public class Board : MonoBehaviourPunCallbacks
         }
 
         return newTileList;
+    }
+
+    public void ResetTilesPieveReference()
+    {
+        foreach (Tile tile in tiles)
+        {
+            tile.Piece = null;
+        }
+    }
+
+    public void SetTilePieceReference(Vector2Int coordinate, Piece piece)
+    {
+        tiles[coordinate.x, coordinate.y].Piece = piece;
+    }
+
+    public Tile GetTileFromCoordinate(Vector2Int coordinate)
+    {
+        return tiles[coordinate.x, coordinate.y];
     }
 }

@@ -1,7 +1,12 @@
 using UnityEngine;
 using TMPro;
+using Photon.Pun;
 public class Piece : Interactable
 {
+    float textSizeSelected = 10f;
+    float textSizeDefault = 6f;
+
+    [HideInInspector] public PhotonView PV;
 
     [SerializeField] TextMeshPro pieceNameText;
     [SerializeField] Position position;
@@ -14,7 +19,6 @@ public class Piece : Interactable
     Color colorSelected;
     Color colorDefault;
 
-    Tile prevTile;
     Tile currentTile;
     public Tile TargetTile { get => currentTile; private set => currentTile = value; }
     Vector3? targetTilePosition;
@@ -65,6 +69,7 @@ public class Piece : Interactable
     {
         moveSpeed = speed;
         moveElevation = elevation;
+        pieceNameText.fontSize = textSizeDefault;
     }
 
     public void Fight(Piece pieceToFight)
@@ -102,10 +107,12 @@ public class Piece : Interactable
     void OnSelect()
     {
         pieceNameText.color = colorSelected;
+        pieceNameText.fontSize = textSizeSelected;
     }
     void OnUnselect()
     {
         pieceNameText.color = colorDefault;
+        pieceNameText.fontSize = textSizeDefault;
     }
 
     private void Awake()
@@ -116,7 +123,7 @@ public class Piece : Interactable
     }
     void Start()
     {
-        
+
     }
 
     void Update()
