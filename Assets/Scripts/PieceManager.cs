@@ -309,7 +309,7 @@ public class PieceManager : PlayerView
             buttonText.text = SET_READY_TEXT;
         }
 
-        List<Vector2> coordinaList = new();
+        List<Vector2Int> coordinaList = new();
         foreach(Piece piece in myPieces)
         {
             coordinaList.Add(piece.TargetTile.GetCoordinateVector2());
@@ -357,7 +357,6 @@ public class PieceManager : PlayerView
     [PunRPC]
     public void RPC_SendStartingPositions(List<Vector2Int> coordinateList, Piece[] pieces )
     {
-        if (PV.IsMine) return;
         for(int c=0; c<pieces.Length; c++)
         {
             Tile tile = board.GetTileFromCoordinate(coordinateList[c]);
