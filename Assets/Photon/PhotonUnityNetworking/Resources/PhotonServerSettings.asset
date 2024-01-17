@@ -40,6 +40,13 @@ MonoBehaviour:
   - Fire
   - RespawnSpaceship
   - RPC_SendStartingPositions
+  - RPC_EndTurn
+  - RPC_OnPlayerEndTurn
+  - RPC_OnPlayerReady
+  - RPC_StartTurn
+  - RPC_MovePiece
+  - RPC_MoveTo
+  - RPC_SendPositions
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1

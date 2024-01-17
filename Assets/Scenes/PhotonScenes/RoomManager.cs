@@ -21,7 +21,6 @@ public class RoomManager : MonoBehaviour
         int playerCount = PhotonNetwork.PlayerList.Length;
         Debug.LogError("Count:"+ playerCount);
         PhotonNetwork.Instantiate(Path.Combine("PhotonPrefabs", "PlayerManager"), Vector3.zero, Quaternion.identity);
-        Debug.LogError("Player Instantiated");
     }
 
     public void ExitGame()

@@ -4,5 +4,5 @@ using Photon.Pun;
 public class PlayerView : MonoBehaviourPunCallbacks
 {
     [SerializeField] protected GameObject[] toDisable;
-    [SerializeField] protected PhotonView PV;
+    [SerializeField] public PhotonView PV;
 }

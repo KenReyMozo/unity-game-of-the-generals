@@ -1,8 +1,8 @@
 using UnityEngine;
-using Unity.Collections;
 using Photon.Pun;
 using System.Collections.Generic;
 using Photon.Realtime;
+using TMPro;
 
 public enum Side
 {
@@ -27,8 +27,12 @@ public class Board : MonoBehaviourPunCallbacks
     List<Tile> tileListTop;
     List<Tile> tileListBottom;
 
-    Player player1 , player2;
-    
+    Player player1, player2;
+    PieceManager playerManager;
+    [SerializeField] TextMeshProUGUI player1NameText;
+    [SerializeField] TextMeshProUGUI player2NameText;
+    [SerializeField] TextMeshProUGUI currentPlayerTurnName;
+    bool isPlayer1Ready, isPlayer2Ready;
 
     [SerializeField] Color availablePositionColor;
     [SerializeField] Color unavailablePositionColor;
@@ -60,16 +64,102 @@ public class Board : MonoBehaviourPunCallbacks
         InitializeBoard();
     }
 
-    public override void OnPlayerEnteredRoom(Player newPlayer)
+    public void SetBoardPlayerManager(PieceManager manager)
     {
-        if(player1 == null)
+        playerManager = manager;
+    }
+
+    public Player OnPlayerJoins()
+    {
+
+        int playerCount = PhotonNetwork.PlayerList.Length;
+        if(playerCount > 2)
+            return null;
+
+        int index = 0;
+
+        foreach(Player player in PhotonNetwork.PlayerList)
         {
-            player1 = newPlayer;
+         
+            if (index == 0)
+            {
+                player1 = player;
+                player1NameText.text = player1.NickName;
+            }
+            if(index == 1)
+            {
+                player2 = player;
+                player2NameText.text = player2.NickName;
+            }
+            index++;
+
         }
-        else
+
+
+        return PhotonNetwork.LocalPlayer;
+    }
+
+    public void StartGame()
+    {
+        PV.RPC(nameof(RPC_OnPlayerReady), RpcTarget.All);
+    }
+
+    [PunRPC]
+    public void RPC_OnPlayerReady(PhotonMessageInfo info)
+    {
+        if(info.Sender == player1)
         {
-            player2 = newPlayer;
+            isPlayer1Ready = true;
         }
+        if(info.Sender == player2)
+        {
+            isPlayer2Ready = true;
+        }
+
+        if (isPlayer1Ready && isPlayer2Ready)
+        {
+            currentPlayerTurnName.text = player1.NickName;
+            playerManager.StartTurn(player1.UserId);
+        }
+
+    }
+
+    public void EndTurn(string userID)
+    {
+        if(userID == player1.UserId)
+        {
+            PV.RPC(nameof(RPC_OnPlayerEndTurn), RpcTarget.All);
+        }
+        if (userID == player2.UserId)
+        {
+            PV.RPC(nameof(RPC_OnPlayerEndTurn), RpcTarget.All);
+        }
+    }
+
+    [PunRPC]
+    public void RPC_OnPlayerEndTurn(PhotonMessageInfo info)
+    {
+        if (info.Sender == player1)
+        {
+            currentPlayerTurnName.text = player2.NickName;
+            playerManager.StartTurn(player2.UserId);
+        }
+        if (info.Sender == player2)
+        {
+            currentPlayerTurnName.text = player1.NickName;
+            playerManager.StartTurn(player1.UserId);
+        }
+    }
+
+    public void MovePiece()
+    {
+        PV.RPC(nameof(RPC_MovePiece), RpcTarget.All);
+    }
+
+    [PunRPC]
+    public void RPC_MovePiece()
+    {
+
     }
 
     void InitializeBoard()

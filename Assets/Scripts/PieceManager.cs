@@ -17,6 +17,7 @@ public enum MoveStatus
 public class PieceManager : PlayerView
 {
     Board board;
+    public Board Board { get => board; private set => board = value; }
 
     Side side;
 
@@ -37,9 +38,11 @@ public class PieceManager : PlayerView
     float moveElevation = 1f;
 
     MoveStatus? moveStatus;
-
+    Player you;
     bool isReady = false;
     bool hasGameStarted = false;
+
+    [SerializeField] GameObject[] objectsToDisableOnReady;
 
     bool isYourTurn = false;
     public bool IsYourTurn { get => isYourTurn; set => isYourTurn = value; }
@@ -64,13 +67,13 @@ public class PieceManager : PlayerView
         playerControl = new PlayerControl();
     }
 
-    private void OnEnable()
+    public override void OnEnable()
     {
         playerControl.Enable();
     }
 
-    private void OnDisable()
-    {
+    public override void OnDisable()
+    { 
         playerControl.Disable();
     }
 
@@ -82,6 +85,16 @@ public class PieceManager : PlayerView
             side = Side.BOTTOM;
         if (playerCount == 2)
             side = Side.TOP;
+
+        board = FindObjectOfType<Board>();
+        if (board == null)
+        {
+            enabled = false;
+            return;
+        }
+
+        you = PhotonNetwork.LocalPlayer;
+        board.OnPlayerJoins();
 
         if (!PV.IsMine)
         {
@@ -95,14 +108,12 @@ public class PieceManager : PlayerView
                 piece.SetIsNotMine();
             }
         }
+        else
+        {
+            board.SetBoardPlayerManager(this);
+        }
 
         playerControl.BoardControl.Select.performed += _ => OnSelectSomething();
-        board = FindObjectOfType<Board>();
-        if (board == null)
-        {
-            enabled = false;
-            return;
-        }
 
         int index = 0;
 
@@ -114,12 +125,14 @@ public class PieceManager : PlayerView
             if (!PV.IsMine) return;
             piece.IsFriendly = true;
             piece.PV = PV;
+            piece.PM = this;
         }
     }
 
     void OnSelectSomething()
     {
         if (!PV.IsMine) return;
+        if (!IsYourTurn) return;
         if (isReady && !hasGameStarted) return;
         if (selectedPiece != null && selectedPiece.IsMoving) return;
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -150,7 +163,6 @@ public class PieceManager : PlayerView
 
     void OnSelectPiece(Piece piece)
     {
-        Debug.LogError("ID: " + piece.gameObject.GetInstanceID());
         if (!PV.IsMine) return;
         if (!piece.IsFriendly) return;
 
@@ -206,12 +218,17 @@ public class PieceManager : PlayerView
                 {
                     //GetPieceNewMovePosition();
                     selectedPiece.MoveTo(tile, true);
+                    if (hasGameStarted)
+                        EndTurn(selectedPiece, tile);
+                    
                 }
                 else
                 {
                     currentTargetPosition = tile.transform.position;
                     selectedPiece.MoveTo(tile, true);
                     moveStatus = MoveStatus.DOWN;
+                    if (hasGameStarted)
+                        EndTurn(selectedPiece, tile);
                 }
                 return;
             }
@@ -304,27 +321,26 @@ public class PieceManager : PlayerView
     public void OnPressReady()
     {
         if (!PV.IsMine) return;
-        isReady = !isReady;
+        isReady = true;
 
         if (isReady && selectedPiece != null)
         {
             selectedPiece.Unselect();
             selectedPiece = null;
         }
-        TextMeshProUGUI buttonText = readyButton.GetComponentInChildren<TextMeshProUGUI>();
-        if (isReady)
+
+        foreach (GameObject obj in objectsToDisableOnReady)
         {
-            board.ResetBoardColor();
-            buttonText.text = READY_TEXT;
-        }
-        else
-        {
-            buttonText.text = SET_READY_TEXT;
+            obj.SetActive(false);
         }
 
+        SendPositions();
+    }
 
+    public void SendPositions()
+    {
         Vector2[] coordinateList = new Vector2[myPieces.Length];
-        for(int c = 0; c < myPieces.Length; c++)
+        for (int c = 0; c < myPieces.Length; c++)
         {
             Vector2 coordinate = myPieces[c].TargetTile.GetCoordinateVector2();
             if (myPieces[c].IsDead)
@@ -335,7 +351,37 @@ public class PieceManager : PlayerView
             coordinateList[c] = coordinate;
         }
 
-        PV.RPC(nameof(RPC_SendStartingPositions), RpcTarget.All, coordinateList);
+
+
+        PV.RPC(nameof(RPC_SendPositions), RpcTarget.All, coordinateList);
+        board.StartGame();
+    }
+
+    public void StartTurn(string userID)
+    {
+        hasGameStarted = true;
+        IsYourTurn = you.UserId == userID;
+
+        PV.RPC(nameof(RPC_StartTurn), RpcTarget.All, userID);
+    }
+
+    [PunRPC]
+    public void RPC_StartTurn(string userID)
+    {
+        if (!PV.IsMine) return;
+        hasGameStarted = true;
+        IsYourTurn = you.UserId == userID;
+    }
+
+    public void EndTurn(Piece piece, Tile tile)
+    {
+        if(selectedPiece != null)
+        {
+            selectedPiece.Unselect();
+            MovePiece(piece, tile);
+        }
+        board.ResetBoardColor();
+        board.EndTurn(you.UserId);
     }
 
     public void OnRandomizePiecePosition()
@@ -376,7 +422,7 @@ public class PieceManager : PlayerView
     }
 
     [PunRPC]
-    public void RPC_SendStartingPositions(Vector2[] coordinateList, PhotonMessageInfo info)
+    public void RPC_SendPositions(Vector2[] coordinateList, PhotonMessageInfo info)
     {
         if (PV.IsMine) return;
         for(int c = 0; c < myPieces.Length; c++)
@@ -392,6 +438,32 @@ public class PieceManager : PlayerView
                 myPieces[c].MoveTo(tile, false);
             }
         }
+    }
+
+    public void MovePiece(Piece piece, Tile tile)
+    {
+        int pieceIndex = 0;
+        for(int c=0; c<myPieces.Length; c++)
+        {
+            if(piece.ID == myPieces[c].ID)
+            {
+                pieceIndex = c;
+                break;
+            }
+        }
+
+        Vector2 coordinate = tile.GetCoordinateVector2();
+
+        PV.RPC(nameof(RPC_MovePiece), RpcTarget.All, pieceIndex, coordinate);
+    }
+
+    [PunRPC]
+    public void RPC_MovePiece(int pieceIndex, Vector2 coordinate)
+    {
+        if (PV.IsMine) return;
+        Piece piece = myPieces[pieceIndex];
+        Tile tile = Board.GetTileFromCoordinate(coordinate);
+        piece.MoveTo(tile, true);
     }
 
     public static PieceManager Find(Player player)

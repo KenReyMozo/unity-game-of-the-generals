@@ -7,6 +7,7 @@ public class Piece : Interactable
     float textSizeDefault = 6f;
 
     [HideInInspector] public PhotonView PV;
+    public PieceManager PM;
 
     int id;
     public int ID { get => id; set => id = value; }

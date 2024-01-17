@@ -72,6 +72,8 @@ MonoBehaviour:
   - {fileID: 4582126759959430384}
   - {fileID: 7644630755449958311}
   - {fileID: 3399656485623895653}
+  objectsToDisableOnReady:
+  - {fileID: 6439858240220107245}
 --- !u!114 &7996777530703555747
 MonoBehaviour:
   m_ObjectHideFlags: 0
