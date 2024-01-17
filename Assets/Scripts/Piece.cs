@@ -8,6 +8,9 @@ public class Piece : Interactable
 
     [HideInInspector] public PhotonView PV;
 
+    int id;
+    public int ID { get => id; set => id = value; }
+
     [SerializeField] TextMeshPro pieceNameText;
     [SerializeField] Position position;
 
@@ -70,6 +73,11 @@ public class Piece : Interactable
         moveSpeed = speed;
         moveElevation = elevation;
         pieceNameText.fontSize = textSizeDefault;
+    }
+
+    public void SetIsNotMine()
+    {
+        pieceNameText.gameObject.SetActive(false);
     }
 
     public void Fight(Piece pieceToFight)

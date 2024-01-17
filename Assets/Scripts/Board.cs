@@ -2,6 +2,7 @@ using UnityEngine;
 using Unity.Collections;
 using Photon.Pun;
 using System.Collections.Generic;
+using Photon.Realtime;
 
 public enum Side
 {
@@ -25,6 +26,8 @@ public class Board : MonoBehaviourPunCallbacks
     Tile[,] tiles;
     List<Tile> tileListTop;
     List<Tile> tileListBottom;
+
+    Player player1 , player2;
     
 
     [SerializeField] Color availablePositionColor;
@@ -55,6 +58,18 @@ public class Board : MonoBehaviourPunCallbacks
     void Start()
     {
         InitializeBoard();
+    }
+
+    public override void OnPlayerEnteredRoom(Player newPlayer)
+    {
+        if(player1 == null)
+        {
+            player1 = newPlayer;
+        }
+        else
+        {
+            player2 = newPlayer;
+        }
     }
 
     void InitializeBoard()
@@ -241,5 +256,11 @@ public class Board : MonoBehaviourPunCallbacks
     public Tile GetTileFromCoordinate(Vector2Int coordinate)
     {
         return tiles[coordinate.x, coordinate.y];
+    }
+    public Tile GetTileFromCoordinate(Vector2 coordinate)
+    {
+        int X = Mathf.FloorToInt(coordinate.x);
+        int Y = Mathf.FloorToInt(coordinate.y);
+        return tiles[X, Y];
     }
 }

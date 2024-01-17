@@ -4,6 +4,9 @@ using TMPro;
 using System.Collections.Generic;
 using System.Linq;
 using Photon.Pun;
+using Hashtable = ExitGames.Client.Photon.Hashtable;
+using Photon.Realtime;
+
 public enum MoveStatus
 {
     UP,
@@ -30,8 +33,8 @@ public class PieceManager : PlayerView
     [SerializeField] Piece[] myPieces;
 
     Vector3? currentTargetPosition;
-    [SerializeField] float moveSpeed = 2f;
-    [SerializeField] float moveElevation = 1f;
+    float moveSpeed = 7f;
+    float moveElevation = 1f;
 
     MoveStatus? moveStatus;
 
@@ -86,6 +89,11 @@ public class PieceManager : PlayerView
             {
                 obj.SetActive(false);
             }
+            foreach (Piece piece in myPieces)
+            {
+                piece.SetPiece(moveSpeed, moveElevation);
+                piece.SetIsNotMine();
+            }
         }
 
         playerControl.BoardControl.Select.performed += _ => OnSelectSomething();
@@ -95,10 +103,14 @@ public class PieceManager : PlayerView
             enabled = false;
             return;
         }
+
+        int index = 0;
+
         foreach (Piece piece in myPieces)
         {
             piece.SetPiece(moveSpeed, moveElevation);
-
+            piece.ID = index;
+            index++;
             if (!PV.IsMine) return;
             piece.IsFriendly = true;
             piece.PV = PV;
@@ -138,6 +150,7 @@ public class PieceManager : PlayerView
 
     void OnSelectPiece(Piece piece)
     {
+        Debug.LogError("ID: " + piece.gameObject.GetInstanceID());
         if (!PV.IsMine) return;
         if (!piece.IsFriendly) return;
 
@@ -309,12 +322,20 @@ public class PieceManager : PlayerView
             buttonText.text = SET_READY_TEXT;
         }
 
-        List<Vector2Int> coordinaList = new();
-        foreach(Piece piece in myPieces)
+
+        Vector2[] coordinateList = new Vector2[myPieces.Length];
+        for(int c = 0; c < myPieces.Length; c++)
         {
-            coordinaList.Add(piece.TargetTile.GetCoordinateVector2());
+            Vector2 coordinate = myPieces[c].TargetTile.GetCoordinateVector2();
+            if (myPieces[c].IsDead)
+            {
+                coordinate.x = -1;
+                coordinate.y = -1;
+            }
+            coordinateList[c] = coordinate;
         }
-        PV.RPC(nameof(RPC_SendStartingPositions), RpcTarget.All, coordinaList, myPieces);
+
+        PV.RPC(nameof(RPC_SendStartingPositions), RpcTarget.All, coordinateList);
     }
 
     public void OnRandomizePiecePosition()
@@ -355,13 +376,35 @@ public class PieceManager : PlayerView
     }
 
     [PunRPC]
-    public void RPC_SendStartingPositions(List<Vector2Int> coordinateList, Piece[] pieces )
+    public void RPC_SendStartingPositions(Vector2[] coordinateList, PhotonMessageInfo info)
     {
-        for(int c=0; c<pieces.Length; c++)
+        if (PV.IsMine) return;
+        for(int c = 0; c < myPieces.Length; c++)
         {
-            Tile tile = board.GetTileFromCoordinate(coordinateList[c]);
-            pieces[c].MoveTo(tile, true);
+            Vector2 coordinate = coordinateList[c];
+            if (coordinate.x < 0 || coordinate.y < 0)
+            {
 
+            }
+            else
+            {
+                Tile tile = board.GetTileFromCoordinate(coordinate);
+                myPieces[c].MoveTo(tile, false);
+            }
         }
     }
+
+    public static PieceManager Find(Player player)
+    {
+        return FindObjectsOfType<PieceManager>().SingleOrDefault(x => x.PV.Owner != player);
+    }
+
+    void TEST()
+    {
+        OnRandomizePiecePosition();
+        Hashtable hash = new Hashtable();
+        hash.Add("kills", 0);
+        PhotonNetwork.LocalPlayer.SetCustomProperties(hash);
+    }
+
 }
