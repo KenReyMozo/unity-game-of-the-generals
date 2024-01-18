@@ -122,9 +122,9 @@ public class PieceManager : PlayerView
             piece.SetPiece(moveSpeed, moveElevation);
             piece.ID = index;
             index++;
+            piece.PV = PV;
             if (!PV.IsMine) return;
             piece.IsFriendly = true;
-            piece.PV = PV;
             piece.PM = this;
         }
     }
@@ -390,8 +390,8 @@ public class PieceManager : PlayerView
         if(selectedPiece != null)
         {
             selectedPiece.Unselect();
-            MovePiece(piece, tile);
         }
+        MovePiece(piece, tile);
         board.ResetBoardColor();
         board.EndTurn(you.UserId);
     }
@@ -475,6 +475,14 @@ public class PieceManager : PlayerView
         if (PV.IsMine) return;
         Piece piece = myPieces[pieceIndex];
         Tile tile = Board.GetTileFromCoordinate(coordinate);
+
+        if(tile.Piece != null)
+        {
+            Debug.LogError("Offense R: " + piece.Position);
+            Debug.LogError("Defense R: " + tile.Piece.Position.ToString());
+        }
+
+
         piece.MoveTo(tile, true);
     }
 
