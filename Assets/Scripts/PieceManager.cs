@@ -164,7 +164,10 @@ public class PieceManager : PlayerView
     void OnSelectPiece(Piece piece)
     {
         if (!PV.IsMine) return;
-        if (!piece.IsFriendly) return;
+        if (!piece.IsFriendly) {
+
+            return;
+        }
 
         piece.OnClick(selectedPiece);
 
@@ -234,7 +237,16 @@ public class PieceManager : PlayerView
             }
             else
             {
-                OnSelectPiece(tile.Piece);
+                if (tile.Piece.IsFriendly)
+                {
+                    OnSelectPiece(tile.Piece);
+                }
+                else
+                {
+                    selectedPiece.MoveTo(tile, true);
+                    if (hasGameStarted)
+                        EndTurn(selectedPiece, tile);
+                }
             }
         }
 
