@@ -82,33 +82,71 @@ public class Piece : Interactable
         pieceNameText.gameObject.SetActive(false);
     }
 
-    public void Fight(Piece pieceToFight)
+    public void Fight(Piece pieceToFight, Tile tile)
     {
+        bool hasYourPieceDied = false, hasEnemyPieceDied = false;
         switch (position)
         {
             case Position.SPY:
                 if(pieceToFight.Position == Position.PRIVATE)
+                {
+                    hasYourPieceDied = true;
                     Die();
+                }
                 else
+                {
+                    hasEnemyPieceDied = true;
                     pieceToFight.Die();
+                }
                 break;
             case Position.PRIVATE:
                 if (pieceToFight.Position == Position.SPY)
+                {
+                    hasEnemyPieceDied = true;
                     pieceToFight.Die();
+                }
                 else
+                {
+                    hasYourPieceDied = true;
                     Die();
+                }
                 break;
             default:
                 if (position == pieceToFight.position)
                 {
                     Die();
                     pieceToFight.Die();
+                    hasYourPieceDied = true;
+                    hasEnemyPieceDied = true;
                 }
                 else if (position < pieceToFight.Position)
+                {
+                    hasYourPieceDied = true;
                     Die();
+
+                }
                 else
+                {
+                    hasEnemyPieceDied = true;
                     pieceToFight.Die();
+                }
                 break;
+        }
+
+        if(hasYourPieceDied && hasEnemyPieceDied)
+        {
+            tile.Piece = null;
+            TargetTile = tile;
+        }
+        else if (hasYourPieceDied)
+        {
+            tile.Piece = pieceToFight;
+            TargetTile = null;
+        }
+        else if (hasEnemyPieceDied)
+        {
+            tile.Piece = this;
+            TargetTile = tile;
         }
     }
 
@@ -129,13 +167,21 @@ public class Piece : Interactable
         if (tile.Piece != null) {
             if (!tile.Piece.IsFriendly)
             {
-                Fight(tile.Piece);
+                Fight(tile.Piece, tile);
             }
+            else
+            {
+                tile.Piece = this;
+                TargetTile = tile;
+            }
+        }
+        else
+        {
+            tile.Piece = this;
+            TargetTile = tile;
         }
 
         targetTilePosition = tile.transform.position;
-        tile.Piece = this;
-        TargetTile = tile;
         GetPieceNewMovePosition();
     }
 
