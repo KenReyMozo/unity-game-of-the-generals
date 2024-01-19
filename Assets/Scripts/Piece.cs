@@ -100,65 +100,70 @@ public class Piece : Interactable
 
     public void Fight(Piece pieceToFight, Tile tile)
     {
-        bool hasYourPieceDied = false, hasEnemyPieceDied = false;
-        switch (position)
+        bool killYourPiece = false, killEnemyPiece = false;
+        switch (Position)
         {
             case Position.SPY:
                 if(pieceToFight.Position == Position.PRIVATE)
+                    killYourPiece = true;
+                else if(pieceToFight.Position == Position.SPY)
                 {
-                    hasYourPieceDied = true;
+                    killEnemyPiece = true;
+                    killYourPiece = true;
                 }
                 else
-                {
-                    hasEnemyPieceDied = true;
-                }
+                    killEnemyPiece = true;
                 break;
             case Position.PRIVATE:
                 if (pieceToFight.Position == Position.SPY)
+                    killEnemyPiece = true;
+                else if (pieceToFight.Position == Position.PRIVATE)
                 {
-                    hasEnemyPieceDied = true;
+                    killEnemyPiece = true;
+                    killYourPiece = true;
                 }
                 else
-                {
-                    hasYourPieceDied = true;
-                }
+                    killYourPiece = true;
                 break;
             default:
-                if (position == pieceToFight.position)
+                if (pieceToFight.Position == Position.SPY)
+                    killYourPiece = true;
+                else if (position == pieceToFight.position)
                 {
-                    hasYourPieceDied = true;
-                    hasEnemyPieceDied = true;
+                    killYourPiece = true;
+                    killEnemyPiece = true;
                 }
                 else if (position < pieceToFight.Position)
-                {
-                    hasYourPieceDied = true;
-                }
+                    killYourPiece = true;
                 else
-                {
-                    hasEnemyPieceDied = true;
-                }
+                    killEnemyPiece = true;
                 break;
         }
 
-        if(hasYourPieceDied && hasEnemyPieceDied)
+        if(killYourPiece && killEnemyPiece)
         {
             tile.Piece = null;
             TargetTile = tile;
             Die();
             pieceToFight.Die();
         }
-        else if (hasYourPieceDied)
+        else if (killYourPiece)
         {
             tile.Piece = pieceToFight;
             TargetTile = null;
             Die();
         }
-        else if (hasEnemyPieceDied)
+        else if (killEnemyPiece)
         {
             tile.Piece = this;
             TargetTile = tile;
             pieceToFight.Die();
         }
+    }
+
+    private void SpyVsAnyone(Piece spy, Piece anyno)
+    {
+
     }
 
     public void Die()

@@ -8,6 +8,7 @@ public enum Side
 {
     TOP,
     BOTTOM,
+    ANY,
 }
 
 public class Board : MonoBehaviourPunCallbacks
@@ -69,12 +70,11 @@ public class Board : MonoBehaviourPunCallbacks
         playerManager = manager;
     }
 
-    public Player OnPlayerJoins()
+    public Side OnPlayerJoins()
     {
-
         int playerCount = PhotonNetwork.PlayerList.Length;
         if(playerCount > 2)
-            return null;
+            return Side.ANY;
 
         int index = 0;
 
@@ -94,9 +94,11 @@ public class Board : MonoBehaviourPunCallbacks
             index++;
 
         }
-
-
-        return PhotonNetwork.LocalPlayer;
+        if (playerCount == 1)
+            return Side.BOTTOM;
+        if (playerCount == 2)
+            return Side.TOP;
+        return Side.ANY;
     }
 
     public void StartGame()

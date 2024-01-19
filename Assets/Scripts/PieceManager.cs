@@ -81,10 +81,6 @@ public class PieceManager : PlayerView
     void Start()
     {
         int playerCount = PhotonNetwork.PlayerList.Length;
-        if (playerCount == 1)
-            side = Side.BOTTOM;
-        if (playerCount == 2)
-            side = Side.TOP;
 
         board = FindObjectOfType<Board>();
         if (board == null)
@@ -94,7 +90,7 @@ public class PieceManager : PlayerView
         }
 
         you = PhotonNetwork.LocalPlayer;
-        board.OnPlayerJoins();
+        side = board.OnPlayerJoins();
 
         if (!PV.IsMine)
         {
@@ -111,6 +107,10 @@ public class PieceManager : PlayerView
         else
         {
             board.SetBoardPlayerManager(this);
+            if(side != Side.ANY)
+            {
+                board.GetAvailablePositionsFromSide(side);
+            }
         }
 
         playerControl.BoardControl.Select.performed += _ => OnSelectSomething();
@@ -132,7 +132,7 @@ public class PieceManager : PlayerView
     void OnSelectSomething()
     {
         if (!PV.IsMine) return;
-        if (!IsYourTurn) return;
+        if (!IsYourTurn && hasGameStarted) return;
         if (isReady && !hasGameStarted) return;
         if (selectedPiece != null && selectedPiece.IsMoving) return;
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -191,13 +191,6 @@ public class PieceManager : PlayerView
             if (selectedPiece != null && selectedPiece.TargetTile != null)
             {
                 board.GetAvailablePositionsFromPosition(selectedPiece.TargetTile);
-            }
-        }
-        else
-        {
-            if (selectedPiece != null && selectedPiece.TargetTile == null)
-            {
-                board.GetAvailablePositionsFromSide(Side.BOTTOM);
             }
         }
 
@@ -308,25 +301,6 @@ public class PieceManager : PlayerView
                 moveStatus = null;
                 break;
         }
-    }
-
-    void Update()
-    {
-        if (selectedPiece == null) return;
-        if (moveStatus == null) return;
-        if (currentTargetPosition == null) return;
-
-        //Vector3 currentPiecePosition = selectedPiece.transform.position;
-
-        //bool isWithinDistance = DistanceHelper.IsWithinDistance(currentPiecePosition, (Vector3)currentTargetPosition);
-
-        //if (isWithinDistance)
-        {
-            //GetPieceNewMovePosition();
-        }
-
-        if (currentTargetPosition == null) return;
-        //selectedPiece.transform.position = Vector3.Lerp(currentPiecePosition, (Vector3)currentTargetPosition, moveSpeed * Time.deltaTime);
     }
 
     public void OnPressReady()
