@@ -9,6 +9,8 @@ public class Piece : Interactable
     [HideInInspector] public PhotonView PV;
     public PieceManager PM;
 
+    Animator animator;
+
     int id;
     public int ID { get => id; set => id = value; }
 
@@ -20,6 +22,8 @@ public class Piece : Interactable
     Vector3? currentTargetPosition;
     [SerializeField] float moveSpeed = 2f;
     [SerializeField] float moveElevation = 1f;
+
+    [SerializeField] GameObject[] objectsToDisableIfNotMine;
 
     Color colorSelected;
     Color colorDefault;
@@ -75,11 +79,23 @@ public class Piece : Interactable
         moveSpeed = speed;
         moveElevation = elevation;
         pieceNameText.fontSize = textSizeDefault;
+
     }
 
     public void SetIsNotMine()
     {
-        //pieceNameText.gameObject.SetActive(false);
+        pieceNameText.gameObject.SetActive(false);
+        CapsuleCollider collider = GetComponentInChildren<CapsuleCollider>();
+        if(collider != null)
+        {
+            collider.enabled = false;
+        }
+        transform.rotation = new Quaternion(0f, -180f, 0f, 0f);
+
+        foreach (GameObject obj in objectsToDisableIfNotMine)
+        {
+            obj.SetActive(false);
+        }
     }
 
     public void Fight(Piece pieceToFight, Tile tile)
@@ -126,7 +142,6 @@ public class Piece : Interactable
 
         if(hasYourPieceDied && hasEnemyPieceDied)
         {
-            Debug.LogError("Both Died");
             tile.Piece = null;
             TargetTile = tile;
             Die();
@@ -134,14 +149,12 @@ public class Piece : Interactable
         }
         else if (hasYourPieceDied)
         {
-            Debug.LogError("Your Piece Died");
             tile.Piece = pieceToFight;
             TargetTile = null;
             Die();
         }
         else if (hasEnemyPieceDied)
         {
-            Debug.LogError("Enemy Died");
             tile.Piece = this;
             TargetTile = tile;
             pieceToFight.Die();
@@ -163,17 +176,41 @@ public class Piece : Interactable
         }
         if (tile.Piece != null)
         {
-            Debug.LogError("OG Tile Piece: " + tile.Piece.Position);
             if (tile.Piece.IsFriendly)
             {
-                Debug.LogError("E");
-                Debug.LogError("Offense: " + Position.ToString());
-                Debug.LogError("Defense: " + tile.Piece.Position.ToString());
                 Fight(tile.Piece, tile);
             }
             else
             {
-                Debug.LogError("F");
+                tile.Piece = this;
+                TargetTile = tile;
+            }
+        }
+        else
+        {
+            tile.Piece = this;
+            TargetTile = tile;
+        }
+
+        targetTilePosition = tile.transform.position;
+        GetPieceNewMovePosition();
+    }
+
+    public void MoveTo(Tile tile, bool isSingleMove, bool overrideIsEnemy)
+    {
+        if (IsMoving) return;
+        if (TargetTile != null && isSingleMove)
+        {
+            TargetTile.Piece = null;
+        }
+        if (tile.Piece != null)
+        {
+            if (tile.Piece.IsFriendly || overrideIsEnemy)
+            {
+                Fight(tile.Piece, tile);
+            }
+            else
+            {
                 tile.Piece = this;
                 TargetTile = tile;
             }
@@ -205,11 +242,13 @@ public class Piece : Interactable
     {
         pieceNameText.color = colorSelected;
         pieceNameText.fontSize = textSizeSelected;
+        animator.SetBool("isSelected", true);
     }
     void OnUnselect()
     {
         pieceNameText.color = colorDefault;
         pieceNameText.fontSize = textSizeDefault;
+        animator.SetBool("isSelected", false);
     }
 
     private void Awake()
@@ -220,7 +259,7 @@ public class Piece : Interactable
     }
     void Start()
     {
-
+        animator = GetComponentInChildren<Animator>();
     }
 
     void Update()

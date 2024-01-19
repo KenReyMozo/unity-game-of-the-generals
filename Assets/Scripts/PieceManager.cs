@@ -219,7 +219,6 @@ public class PieceManager : PlayerView
             {
                 if(selectedPiece.TargetTile != null)
                 {
-                    //GetPieceNewMovePosition();
                     selectedPiece.MoveTo(tile, true);
                     if (hasGameStarted)
                         EndTurn(selectedPiece, tile);
@@ -243,7 +242,7 @@ public class PieceManager : PlayerView
                 }
                 else
                 {
-                    selectedPiece.MoveTo(tile, true);
+                    selectedPiece.MoveTo(tile, true, true);
                     if (hasGameStarted)
                         EndTurn(selectedPiece, tile);
                 }
@@ -390,6 +389,7 @@ public class PieceManager : PlayerView
         if(selectedPiece != null)
         {
             selectedPiece.Unselect();
+            selectedPiece = null;
         }
         MovePiece(piece, tile);
         board.ResetBoardColor();

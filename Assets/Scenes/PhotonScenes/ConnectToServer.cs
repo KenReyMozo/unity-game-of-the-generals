@@ -74,4 +74,5 @@ public class ConnectToServer : MonoBehaviourPunCallbacks
         loadingText.text = "DONE";
         StopAllCoroutines();
     }
+
 }
