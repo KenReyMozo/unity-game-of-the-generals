@@ -80,4 +80,9 @@ public class CreateAndJoinRooms : MonoBehaviourPunCallbacks
         createRoomInput.interactable = isEnabled;
         joinRoomInput.interactable = isEnabled;
     }
+
+    public override void OnJoinRandomFailed(short returnCode, string message)
+    {
+        EnableStartCreateOrJoin(true);
+    }
 }

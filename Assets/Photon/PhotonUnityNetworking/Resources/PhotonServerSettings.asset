@@ -47,6 +47,9 @@ MonoBehaviour:
   - RPC_MovePiece
   - RPC_MoveTo
   - RPC_SendPositions
+  - RPC_OnGameEndWithBottomSideVictory
+  - RPC_OnGameEndWithTopSideVictory
+  - RPC_OnGameEndWithDraw
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1

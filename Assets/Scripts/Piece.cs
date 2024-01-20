@@ -127,6 +127,12 @@ public class Piece : Interactable
                 else
                     killYourPiece = true;
                 break;
+            case Position.FLAG:
+                if(pieceToFight.Position == Position.FLAG)
+                    killEnemyPiece = true;
+                else
+                    killYourPiece = true;
+                break;
             default:
                 if (pieceToFight.Position == Position.SPY)
                     killYourPiece = true;
@@ -144,6 +150,8 @@ public class Piece : Interactable
 
         if(killYourPiece && killEnemyPiece)
         {
+            FXManager.Instance.GetLoseFX(transform.position);
+            FXManager.Instance.GetLoseFX(pieceToFight.transform.position);
             tile.Piece = null;
             TargetTile = tile;
             Die();
@@ -151,15 +159,33 @@ public class Piece : Interactable
         }
         else if (killYourPiece)
         {
+            FXManager.Instance.GetLoseFX(transform.position);
+            FXManager.Instance.GetWinFX(pieceToFight.transform.position);
             tile.Piece = pieceToFight;
             TargetTile = null;
             Die();
+            if (Position == Position.FLAG)
+            {
+                if (PM.Side == Side.TOP)
+                    PM.EndWithBottomVictory();
+                else if (PM.Side == Side.BOTTOM)
+                    PM.EndWithTopVictory();
+            }
         }
         else if (killEnemyPiece)
         {
+            FXManager.Instance.GetWinFX(transform.position);
+            FXManager.Instance.GetLoseFX(pieceToFight.transform.position);
             tile.Piece = this;
             TargetTile = tile;
             pieceToFight.Die();
+            if (pieceToFight.Position == Position.FLAG)
+            {
+                if (PM.Side == Side.TOP)
+                    PM.EndWithTopVictory();
+                else if (PM.Side == Side.BOTTOM)
+                    PM.EndWithBottomVictory();
+            }
         }
     }
 

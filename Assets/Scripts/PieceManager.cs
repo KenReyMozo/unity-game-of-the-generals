@@ -95,6 +95,7 @@ public class PieceManager : PlayerView
         You = PhotonNetwork.LocalPlayer;
         Side = board.OnPlayerJoins();
 
+
         if (!PV.IsMine)
         {
             foreach (GameObject obj in toDisable)
@@ -106,9 +107,13 @@ public class PieceManager : PlayerView
                 piece.SetPiece(moveSpeed, moveElevation);
                 piece.SetIsNotMine();
             }
+
         }
         else
         {
+            if (Side == Side.TOP)
+                board.RotatePlayerCamera(180f);
+
             board.SetBoardPlayerManager(this);
             if (Side != Side.ANY)
             {
@@ -459,6 +464,21 @@ public class PieceManager : PlayerView
     public static PieceManager Find(Player player)
     {
         return FindObjectsOfType<PieceManager>().SingleOrDefault(x => x.PV.Owner != player);
+    }
+
+    public void EndWithTopVictory()
+    {
+        board.EndGameWithTopSideVictory();
+    }
+
+    public void EndWithBottomVictory()
+    {
+        board.EndGameWithBottomSideVictory();
+    }
+
+    public void EndWithDraw()
+    {
+        board.EndGameWithDraw();
     }
 
     void TEST()

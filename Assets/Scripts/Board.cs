@@ -3,6 +3,7 @@ using Photon.Pun;
 using System.Collections.Generic;
 using Photon.Realtime;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public enum Side
 {
@@ -14,7 +15,7 @@ public enum Side
 public class Board : MonoBehaviourPunCallbacks
 {
     [SerializeField] PhotonView PV;
-  
+
     [Range(8, 12)]
     [SerializeField] int boardX = 9;
     [Range(8, 12)]
@@ -33,12 +34,17 @@ public class Board : MonoBehaviourPunCallbacks
     [SerializeField] TextMeshProUGUI player1NameText;
     [SerializeField] TextMeshProUGUI player2NameText;
     [SerializeField] TextMeshProUGUI currentPlayerTurnName;
+    [SerializeField] TextMeshProUGUI winnerPlayerName;
     bool isPlayer1Ready, isPlayer2Ready;
 
     [SerializeField] Color availablePositionColor;
     [SerializeField] Color unavailablePositionColor;
     [SerializeField] Color friendlyPositionColor;
     [SerializeField] Color enemyPositionColor;
+
+    [SerializeField] Transform cameraHolder;
+
+    [SerializeField] GameObject[] objectsToEnableOnGameEnd;
 
     private void OnDrawGizmos()
     {
@@ -164,16 +170,6 @@ public class Board : MonoBehaviourPunCallbacks
         }
     }
 
-    public void MovePiece()
-    {
-        PV.RPC(nameof(RPC_MovePiece), RpcTarget.All);
-    }
-
-    [PunRPC]
-    public void RPC_MovePiece()
-    {
-
-    }
 
     void InitializeBoard()
     {
@@ -197,7 +193,6 @@ public class Board : MonoBehaviourPunCallbacks
                 Vector3 newPosition = newInitialPosition + ((c1 * tileGap) * -Vector3.forward);
 
                 GameObject _tile = Instantiate(tilePrefab, transform);
-
 
                 tiles[c, c1] = _tile.GetComponent<Tile>();
                 tiles[c, c1].SetupTile(newPosition, _tileSize, c, c1);
@@ -384,5 +379,83 @@ public class Board : MonoBehaviourPunCallbacks
         int X = Mathf.FloorToInt(coordinate.x);
         int Y = Mathf.FloorToInt(coordinate.y);
         return tiles[X, Y];
+    }
+
+    public void RotatePlayerCamera()
+    {
+        RotateObjectOnYAxis(cameraHolder, 180f);
+    }
+
+    public void RotatePlayerCamera(float degrees)
+    {
+        RotateObjectOnYAxis(cameraHolder, degrees);
+    }
+
+    void RotateObjectOnYAxis(Transform transformToRotate, float angle)
+    {
+        Vector3 currentRotation = transformToRotate.rotation.eulerAngles;
+
+        currentRotation.y = angle;
+
+        transformToRotate.rotation = Quaternion.Euler(currentRotation);
+    }
+
+    public void EndGame()
+    {
+        PhotonNetwork.LeaveRoom();
+        SceneManager.LoadScene(SceneConstants.LOBBY_SCENE);
+    }
+
+    public void EndGameWithTopSideVictory()
+    {
+        OnEndGame();
+        winnerPlayerName.text = "Winner: " + player2.NickName + " !!!";
+        PV.RPC(nameof(RPC_OnGameEndWithTopSideVictory), RpcTarget.All);
+    }
+    public void EndGameWithBottomSideVictory()
+    {
+        OnEndGame();
+        winnerPlayerName.text = "Winner: " + player1.NickName + " !!!";
+        PV.RPC(nameof(RPC_OnGameEndWithBottomSideVictory), RpcTarget.All);
+    }
+
+    public void EndGameWithDraw()
+    {
+        OnEndGame();
+        PV.RPC(nameof(RPC_OnGameEndWithBottomSideVictory), RpcTarget.All);
+    }
+
+    [PunRPC]
+    public void RPC_OnGameEndWithTopSideVictory()
+    {
+        if (!PV.IsMine) return;
+        OnEndGame();
+        winnerPlayerName.text = "Winner: "+player2.NickName + " !!!";
+    }   
+    
+    [PunRPC]
+    public void RPC_OnGameEndWithBottomSideVictory()
+    {
+        if (!PV.IsMine) return;
+        OnEndGame();
+        winnerPlayerName.text = "Winner: "+player1.NickName+" !!!";
+
+    }    
+    [PunRPC]
+
+    public void RPC_OnGameEndWithDraw()
+    {
+        if (!PV.IsMine) return;
+        OnEndGame();
+        winnerPlayerName.text = "DRAW !!!";
+    }
+
+
+    void OnEndGame()
+    {
+        foreach (GameObject obj in objectsToEnableOnGameEnd)
+        {
+            obj.SetActive(true);
+        }
     }
 }
