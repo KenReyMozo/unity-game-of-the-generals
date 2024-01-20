@@ -150,4 +150,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79d12f2faae774243b06aa01b734eed9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  boxCollider: {fileID: 2746519673963076791}
   meshRenderer: {fileID: 8510459976577965739}

@@ -596,9 +596,10 @@ MonoBehaviour:
   player1NameText: {fileID: 453814038}
   player2NameText: {fileID: 818043150}
   currentPlayerTurnName: {fileID: 501602840}
-  availablePositionColor: {r: 0.4245283, g: 0.4245283, b: 0.4245283, a: 0}
-  unavailablePositionColor: {r: 0.16862746, g: 0.16862746, b: 0.16862746, a: 0}
-  enemyPositionColor: {r: 0, g: 0, b: 0, a: 0}
+  availablePositionColor: {r: 0.3962264, g: 0.3962264, b: 0.3962264, a: 0}
+  unavailablePositionColor: {r: 0.084905684, g: 0.084905684, b: 0.084905684, a: 0}
+  friendlyPositionColor: {r: 0.07355821, g: 0.1792453, b: 0.10715439, a: 0}
+  enemyPositionColor: {r: 0.3018868, g: 0, b: 0, a: 0}
 --- !u!4 &651400153
 Transform:
   m_ObjectHideFlags: 0

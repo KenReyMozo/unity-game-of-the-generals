@@ -3,6 +3,7 @@ using UnityEngine;
 public class Tile : Interactable
 {
     Piece piece;
+    [SerializeField] BoxCollider boxCollider;
     public Piece Piece { get => piece; set => piece = value; }
     [SerializeField] MeshRenderer meshRenderer;
 
@@ -13,6 +14,11 @@ public class Tile : Interactable
 
     public int X { get => index_X; private set => index_X = value; }
     public int Y { get => index_Y; private set => index_Y = value; }
+
+    private void Start()
+    {
+        SetAsUnavailable();
+    }
 
     public override Interactable OnClick()
     {
@@ -43,5 +49,15 @@ public class Tile : Interactable
     {
         Vector2 coordinate = new Vector2(X, Y);
         return coordinate;
+    }
+
+    public void SetAsAvailable()
+    {
+        boxCollider.enabled = true;
+    }
+
+    public void SetAsUnavailable()
+    {
+        boxCollider.enabled = false;
     }
 }

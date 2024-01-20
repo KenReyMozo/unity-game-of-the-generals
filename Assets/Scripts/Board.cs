@@ -37,6 +37,7 @@ public class Board : MonoBehaviourPunCallbacks
 
     [SerializeField] Color availablePositionColor;
     [SerializeField] Color unavailablePositionColor;
+    [SerializeField] Color friendlyPositionColor;
     [SerializeField] Color enemyPositionColor;
 
     private void OnDrawGizmos()
@@ -75,6 +76,16 @@ public class Board : MonoBehaviourPunCallbacks
         int playerCount = PhotonNetwork.PlayerList.Length;
         if(playerCount > 2)
             return Side.ANY;
+        else if(playerCount == 2 && (player1 != null && player2 != null))
+        {
+            isPlayer1Ready = false;
+            isPlayer2Ready = false;
+            if (PhotonNetwork.LocalPlayer == player1)
+                return Side.BOTTOM;
+            if (PhotonNetwork.LocalPlayer == player2)
+                return Side.TOP;
+        }
+
 
         int index = 0;
 
@@ -237,9 +248,14 @@ public class Board : MonoBehaviourPunCallbacks
 
     private void ProcessTilePosition(Tile tile)
     {
-        if(tile.Piece == null)
+        tile.SetAsAvailable();
+        if (tile.Piece == null)
         {
             tile.SetColor(availablePositionColor);
+        }
+        else if (tile.Piece != null && tile.Piece.IsFriendly)
+        {
+            tile.SetColor(friendlyPositionColor);
         }
         else if(tile.Piece != null && !tile.Piece.IsFriendly)
         {
@@ -253,7 +269,17 @@ public class Board : MonoBehaviourPunCallbacks
         {
             for (int c1 = 0; c1 < boardY; c1++)
             {
-                tiles[c, c1].SetColor(unavailablePositionColor);
+                Tile tile = tiles[c, c1];
+                if (tile.Piece != null && tile.Piece.IsFriendly)
+                {
+                    tile.SetColor(friendlyPositionColor);
+                    tile.SetAsAvailable();
+                }
+                else
+                {
+                    tile.SetColor(unavailablePositionColor);
+                    tile.SetAsUnavailable();
+                }
             }
         }
     }
@@ -262,7 +288,7 @@ public class Board : MonoBehaviourPunCallbacks
     {
         if(side == Side.TOP)
         {
-            int maxY = Mathf.FloorToInt(boardY/2) - 1;
+            int maxY = Mathf.FloorToInt(boardY/2) - 2;
             for (int c = 0; c < boardX; c++)
             {
                 for(int c1 = 0; c1 < boardY; c1++)
@@ -270,10 +296,12 @@ public class Board : MonoBehaviourPunCallbacks
                     if(c1 <= maxY)
                     {
                         tiles[c, c1].SetColor(availablePositionColor);
+                        tiles[c, c1].SetAsAvailable();
                     }
                     else
                     {
                         tiles[c, c1].SetColor(unavailablePositionColor);
+                        tiles[c, c1].SetAsUnavailable();
                     }
                 }
             }
@@ -288,10 +316,12 @@ public class Board : MonoBehaviourPunCallbacks
                     if (c1 >= minT)
                     {
                         tiles[c, c1].SetColor(availablePositionColor);
+                        tiles[c, c1].SetAsAvailable();
                     }
                     else
                     {
                         tiles[c, c1].SetColor(unavailablePositionColor);
+                        tiles[c, c1].SetAsUnavailable();
                     }
                 }
             }
@@ -332,7 +362,7 @@ public class Board : MonoBehaviourPunCallbacks
         return newTileList;
     }
 
-    public void ResetTilesPieveReference()
+    public void ResetTilesPieceReference()
     {
         foreach (Tile tile in tiles)
         {

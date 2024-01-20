@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 using System.Collections.Generic;
 using System.Linq;
 using Photon.Pun;
@@ -17,9 +16,9 @@ public enum MoveStatus
 public class PieceManager : PlayerView
 {
     Board board;
-    public Board Board { get => board; private set => board = value; }
+    public Board Board { get => board; set => board = value; }
 
-    Side side;
+    public Side Side;
 
     const string PIECE_TAG = "Piece";
     const string TILE_TAG = "Tile";
@@ -28,6 +27,7 @@ public class PieceManager : PlayerView
     const string SET_READY_TEXT = "Set Ready";
 
     [SerializeField] Button readyButton;
+    [SerializeField] Button restartButton;
     PlayerControl playerControl;
     Piece selectedPiece;
 
@@ -38,7 +38,7 @@ public class PieceManager : PlayerView
     float moveElevation = 1f;
 
     MoveStatus? moveStatus;
-    Player you;
+    public Player You;
     bool isReady = false;
     bool hasGameStarted = false;
 
@@ -80,8 +80,11 @@ public class PieceManager : PlayerView
 
     void Start()
     {
-        int playerCount = PhotonNetwork.PlayerList.Length;
+        InitializePlayer();
+    }
 
+    public void InitializePlayer()
+    {
         board = FindObjectOfType<Board>();
         if (board == null)
         {
@@ -89,8 +92,8 @@ public class PieceManager : PlayerView
             return;
         }
 
-        you = PhotonNetwork.LocalPlayer;
-        side = board.OnPlayerJoins();
+        You = PhotonNetwork.LocalPlayer;
+        Side = board.OnPlayerJoins();
 
         if (!PV.IsMine)
         {
@@ -107,9 +110,9 @@ public class PieceManager : PlayerView
         else
         {
             board.SetBoardPlayerManager(this);
-            if(side != Side.ANY)
+            if (Side != Side.ANY)
             {
-                board.GetAvailablePositionsFromSide(side);
+                board.GetAvailablePositionsFromSide(Side);
             }
         }
 
@@ -345,7 +348,7 @@ public class PieceManager : PlayerView
     public void StartTurn(string userID)
     {
         hasGameStarted = true;
-        IsYourTurn = you.UserId == userID;
+        IsYourTurn = You.UserId == userID;
 
         PV.RPC(nameof(RPC_StartTurn), RpcTarget.All, userID);
     }
@@ -355,7 +358,7 @@ public class PieceManager : PlayerView
     {
         if (!PV.IsMine) return;
         hasGameStarted = true;
-        IsYourTurn = you.UserId == userID;
+        IsYourTurn = You.UserId == userID;
     }
 
     public void EndTurn(Piece piece, Tile tile)
@@ -367,16 +370,16 @@ public class PieceManager : PlayerView
         }
         MovePiece(piece, tile);
         board.ResetBoardColor();
-        board.EndTurn(you.UserId);
+        board.EndTurn(You.UserId);
     }
 
     public void OnRandomizePiecePosition()
     {
         if (!PV.IsMine) return;
         Piece[] availablePieces = myPieces.Where(piece => !piece.IsMoving).ToArray();
-        board.ResetTilesPieveReference();
+        board.ResetTilesPieceReference();
         if (availablePieces.Length != myPieces.Length) return;
-        List<Tile> tileList = board.GetRandomTiles(myPieces.Length, side);
+        List<Tile> tileList = board.GetRandomTiles(myPieces.Length, Side);
         if (tileList == null) return;
         int index = 0;
         Shuffle(tileList);
@@ -449,13 +452,6 @@ public class PieceManager : PlayerView
         if (PV.IsMine) return;
         Piece piece = myPieces[pieceIndex];
         Tile tile = Board.GetTileFromCoordinate(coordinate);
-
-        if(tile.Piece != null)
-        {
-            Debug.LogError("Offense R: " + piece.Position);
-            Debug.LogError("Defense R: " + tile.Piece.Position.ToString());
-        }
-
 
         piece.MoveTo(tile, true);
     }

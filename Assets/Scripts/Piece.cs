@@ -3,7 +3,7 @@ using TMPro;
 using Photon.Pun;
 public class Piece : Interactable
 {
-    float textSizeSelected = 10f;
+    float textSizeSelected = 8f;
     float textSizeDefault = 6f;
 
     [HideInInspector] public PhotonView PV;
@@ -122,18 +122,20 @@ public class Piece : Interactable
                     killEnemyPiece = true;
                     killYourPiece = true;
                 }
+                else if (Position > pieceToFight.Position)
+                    killEnemyPiece = true;
                 else
                     killYourPiece = true;
                 break;
             default:
                 if (pieceToFight.Position == Position.SPY)
                     killYourPiece = true;
-                else if (position == pieceToFight.position)
+                else if (Position == pieceToFight.Position)
                 {
                     killYourPiece = true;
                     killEnemyPiece = true;
                 }
-                else if (position < pieceToFight.Position)
+                else if (Position < pieceToFight.Position)
                     killYourPiece = true;
                 else
                     killEnemyPiece = true;
@@ -159,11 +161,6 @@ public class Piece : Interactable
             TargetTile = tile;
             pieceToFight.Die();
         }
-    }
-
-    private void SpyVsAnyone(Piece spy, Piece anyno)
-    {
-
     }
 
     public void Die()
