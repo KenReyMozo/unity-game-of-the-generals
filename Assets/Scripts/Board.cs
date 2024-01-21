@@ -81,11 +81,15 @@ public class Board : MonoBehaviourPunCallbacks
     {
         int playerCount = PhotonNetwork.PlayerList.Length;
         if(playerCount > 2)
+        {
+            MakePlayerEnableReady();
             return Side.ANY;
+        }
         else if(playerCount == 2 && (player1 != null && player2 != null))
         {
             isPlayer1Ready = false;
             isPlayer2Ready = false;
+            MakePlayerEnableReady();
             if (PhotonNetwork.LocalPlayer == player1)
                 return Side.BOTTOM;
             if (PhotonNetwork.LocalPlayer == player2)
@@ -114,8 +118,20 @@ public class Board : MonoBehaviourPunCallbacks
         if (playerCount == 1)
             return Side.BOTTOM;
         if (playerCount == 2)
+        {
+            MakePlayerEnableReady();
             return Side.TOP;
+        }
         return Side.ANY;
+    }
+
+    void MakePlayerEnableReady()
+    {
+        PieceManager[] pieceManagers = FindObjectsOfType<PieceManager>();
+        foreach (PieceManager pieceManager in pieceManagers)
+        {
+            pieceManager.EnablePlayerToReady();
+        }
     }
 
     public void StartGame()

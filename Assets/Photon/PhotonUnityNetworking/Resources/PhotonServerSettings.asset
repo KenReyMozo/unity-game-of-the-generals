@@ -50,6 +50,7 @@ MonoBehaviour:
   - RPC_OnGameEndWithBottomSideVictory
   - RPC_OnGameEndWithTopSideVictory
   - RPC_OnGameEndWithDraw
+  - RPC_EnablePlayerToReady
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1

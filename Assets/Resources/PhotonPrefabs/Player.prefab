@@ -10242,8 +10242,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e4954f8bdcaed542a4964dd15734b50, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  toDisable:
+  toDisableIfNotMine:
   - {fileID: 4816086172307723245}
+  toEnableIfReady:
+  - {fileID: 6195035530818584807}
   PV: {fileID: 6303351184356718194}
   Side: 0
   readyButton: {fileID: 3451979204174317039}
@@ -10313,7 +10315,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &8441715211737215165
 RectTransform:
   m_ObjectHideFlags: 0

@@ -77,6 +77,22 @@ public class PieceManager : PlayerView
         playerControl.Disable();
     }
 
+    public void EnablePlayerToReady()
+    {
+        PV.RPC(nameof(RPC_EnablePlayerToReady), RpcTarget.All);
+    }
+
+    [PunRPC]
+    public void RPC_EnablePlayerToReady()
+    {
+        Debug.Log("Ready Available!");
+        if (!PV.IsMine) return;
+        foreach(GameObject obj in toEnableIfReady)
+        {
+            obj.SetActive(true);
+        }
+    }
+
 
     void Start()
     {
@@ -98,7 +114,7 @@ public class PieceManager : PlayerView
 
         if (!PV.IsMine)
         {
-            foreach (GameObject obj in toDisable)
+            foreach (GameObject obj in toDisableIfNotMine)
             {
                 obj.SetActive(false);
             }

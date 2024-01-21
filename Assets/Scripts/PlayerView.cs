@@ -3,7 +3,9 @@ using Photon.Pun;
 
 public class PlayerView : MonoBehaviourPunCallbacks
 {
-    [SerializeField] protected GameObject[] toDisable;
+    [SerializeField] protected GameObject[] toDisableIfNotMine;
+    [SerializeField] protected GameObject[] toEnableIfReady;
+
     [SerializeField] public PhotonView PV;
 
 
@@ -15,4 +17,5 @@ public class PlayerView : MonoBehaviourPunCallbacks
         if (PV == null)
             PV = GetComponent<PhotonView>();
     }
+
 }
