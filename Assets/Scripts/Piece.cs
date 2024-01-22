@@ -47,6 +47,9 @@ public class Piece : Interactable
     bool isSelected = false;
     public bool IsSelected { get => isSelected; private set => isSelected = value; }
 
+    bool winOnNextTurnIfAlive = false;
+    public void SetWinOnNextTurnIfAlive() => winOnNextTurnIfAlive = true;
+
     Transform _t;
     public void OnClick(Piece selectedPiece)
     {
@@ -220,8 +223,32 @@ public class Piece : Interactable
             TargetTile = tile;
         }
 
+        CheckIfFlagInWinPosition(tile);
         targetTilePosition = tile.transform.position;
         GetPieceNewMovePosition();
+    }
+
+    void CheckIfFlagInWinPosition(Tile tile)
+    {
+        if (Position != Position.FLAG) return;
+        if (IsDead) return;
+
+        if (PM.Side == Side.TOP)
+        {
+            int winIndex = PM.Board.GetTopSideWinIndex();
+            if(tile.Y == winIndex)
+            {
+                PM.SetWinOnNextTurnIfAlive();
+            }
+        }
+        else if (PM.Side == Side.BOTTOM)
+        {
+            int winIndex = PM.Board.GetBottomSideWinIndex();
+            if (tile.Y == winIndex)
+            {
+                PM.SetWinOnNextTurnIfAlive();
+            }
+        }
     }
 
     public void MoveTo(Tile tile, bool isSingleMove, bool overrideIsEnemy)

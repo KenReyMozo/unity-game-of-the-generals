@@ -46,6 +46,9 @@ public class Board : MonoBehaviourPunCallbacks
 
     [SerializeField] GameObject[] objectsToEnableOnGameEnd;
 
+    public int GetBottomSideWinIndex() => 0;
+    public int GetTopSideWinIndex() => boardY-1;
+
     private void OnDrawGizmos()
     {
         Vector3 _tileSize = new(tileSize, 0.5f, tileSize);
@@ -472,6 +475,11 @@ public class Board : MonoBehaviourPunCallbacks
         foreach (GameObject obj in objectsToEnableOnGameEnd)
         {
             obj.SetActive(true);
+        }
+        PieceManager[] pieceManagers = FindObjectsOfType<PieceManager>();
+        foreach(PieceManager pieceManager in pieceManagers)
+        {
+            pieceManager.SetGameHasEnded();
         }
     }
 }

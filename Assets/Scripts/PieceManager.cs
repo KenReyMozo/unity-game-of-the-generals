@@ -20,6 +20,10 @@ public class PieceManager : PlayerView
 
     public Side Side;
 
+    bool isNextTurnWin = false;
+
+    public void SetWinOnNextTurnIfAlive() => isNextTurnWin = true;
+
     const string PIECE_TAG = "Piece";
     const string TILE_TAG = "Tile";
 
@@ -31,6 +35,7 @@ public class PieceManager : PlayerView
     PlayerControl playerControl;
     Piece selectedPiece;
 
+    [SerializeField] Piece yourFlag;
     [SerializeField] Piece[] myPieces;
 
     Vector3? currentTargetPosition;
@@ -41,6 +46,9 @@ public class PieceManager : PlayerView
     public Player You;
     bool isReady = false;
     bool hasGameStarted = false;
+    bool hasGameEnded = false;
+
+    public void SetGameHasEnded() => hasGameEnded = true;
 
     [SerializeField] GameObject[] objectsToDisableOnReady;
 
@@ -370,7 +378,6 @@ public class PieceManager : PlayerView
     {
         hasGameStarted = true;
         IsYourTurn = You.UserId == userID;
-
         PV.RPC(nameof(RPC_StartTurn), RpcTarget.All, userID);
     }
 
@@ -474,7 +481,28 @@ public class PieceManager : PlayerView
         Piece piece = myPieces[pieceIndex];
         Tile tile = Board.GetTileFromCoordinate(coordinate);
 
+        WinByCapture();
         piece.MoveTo(tile, true);
+        Debug.LogError("1");
+    }
+
+    void WinByCapture()
+    {
+        Debug.LogError("2");
+        if (isNextTurnWin && !yourFlag.IsDead)
+        {
+            Debug.LogError("3");
+            if (Side == Side.TOP)
+            {
+                Debug.LogError("4");
+                EndWithTopVictory();
+            }
+            else if (Side == Side.BOTTOM)
+            {
+                Debug.LogError("5");
+                EndWithBottomVictory();
+            }
+        }
     }
 
     public static PieceManager Find(Player player)

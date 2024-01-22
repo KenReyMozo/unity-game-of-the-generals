@@ -10250,6 +10250,7 @@ MonoBehaviour:
   Side: 0
   readyButton: {fileID: 3451979204174317039}
   restartButton: {fileID: 3877463551080963877}
+  yourFlag: {fileID: 5725658259472401112}
   myPieces:
   - {fileID: 1750758692080459058}
   - {fileID: 7148485664370371605}
