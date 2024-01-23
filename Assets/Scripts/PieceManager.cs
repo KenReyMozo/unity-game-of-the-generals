@@ -378,6 +378,10 @@ public class PieceManager : PlayerView
     {
         hasGameStarted = true;
         IsYourTurn = You.UserId == userID;
+        if (doWinTheGame && IsYourTurn)
+        {
+            WinByCapture();
+        }
         PV.RPC(nameof(RPC_StartTurn), RpcTarget.All, userID);
     }
 
@@ -471,35 +475,40 @@ public class PieceManager : PlayerView
 
         Vector2 coordinate = tile.GetCoordinateVector2();
 
+
         PV.RPC(nameof(RPC_MovePiece), RpcTarget.All, pieceIndex, coordinate);
     }
 
+    bool doWinTheGame = false;
+
     [PunRPC]
-    public void RPC_MovePiece(int pieceIndex, Vector2 coordinate)
+    public void RPC_MovePiece(int pieceIndex, Vector2 coordinate, PhotonMessageInfo info)
     {
-        if (PV.IsMine) return;
+        if (PV.IsMine)
+        {
+            if (isNextTurnWin && !doWinTheGame)
+            {
+                doWinTheGame = true;
+            }
+            return;
+        }
         Piece piece = myPieces[pieceIndex];
         Tile tile = Board.GetTileFromCoordinate(coordinate);
 
-        WinByCapture();
         piece.MoveTo(tile, true);
-        Debug.LogError("1");
+        
     }
 
     void WinByCapture()
     {
-        Debug.LogError("2");
         if (isNextTurnWin && !yourFlag.IsDead)
         {
-            Debug.LogError("3");
             if (Side == Side.TOP)
             {
-                Debug.LogError("4");
                 EndWithTopVictory();
             }
             else if (Side == Side.BOTTOM)
             {
-                Debug.LogError("5");
                 EndWithBottomVictory();
             }
         }

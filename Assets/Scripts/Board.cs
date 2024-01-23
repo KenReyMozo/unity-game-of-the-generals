@@ -447,7 +447,6 @@ public class Board : MonoBehaviourPunCallbacks
     [PunRPC]
     public void RPC_OnGameEndWithTopSideVictory()
     {
-        if (!PV.IsMine) return;
         OnEndGame();
         winnerPlayerName.text = "Winner: "+player2.NickName + " !!!";
     }   
@@ -455,7 +454,6 @@ public class Board : MonoBehaviourPunCallbacks
     [PunRPC]
     public void RPC_OnGameEndWithBottomSideVictory()
     {
-        if (!PV.IsMine) return;
         OnEndGame();
         winnerPlayerName.text = "Winner: "+player1.NickName+" !!!";
 
