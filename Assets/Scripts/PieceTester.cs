@@ -84,9 +84,9 @@ public class PieceTester : MonoBehaviour
                     break;
                 default:
                     if (piecePosition < pos)
-                        AddValue(piecePosition, pos, 1);
-                    else if (piecePosition > pos)
                         AddValue(piecePosition, pos, -1);
+                    else if (piecePosition > pos)
+                        AddValue(piecePosition, pos, 1);
                     else
                         AddValue(piecePosition, pos, 0);
                     break;
