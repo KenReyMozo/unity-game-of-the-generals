@@ -61,7 +61,7 @@ public class PieceManager : PlayerView
         board.ResetBoardColor();
         foreach (Piece piece in myPieces)
         {
-            if(piece.TargetTile == null)
+            if (piece.TargetTile == null)
             {
                 piece.IsDead = true;
                 piece.gameObject.SetActive(false);
@@ -81,7 +81,7 @@ public class PieceManager : PlayerView
     }
 
     public override void OnDisable()
-    { 
+    {
         playerControl.Disable();
     }
 
@@ -95,7 +95,7 @@ public class PieceManager : PlayerView
     {
         Debug.Log("Ready Available!");
         if (!PV.IsMine) return;
-        foreach(GameObject obj in toEnableIfReady)
+        foreach (GameObject obj in toEnableIfReady)
         {
             obj.SetActive(true);
         }
@@ -196,7 +196,8 @@ public class PieceManager : PlayerView
     void OnSelectPiece(Piece piece)
     {
         if (!PV.IsMine) return;
-        if (!piece.IsFriendly) {
+        if (!piece.IsFriendly)
+        {
 
             return;
         }
@@ -215,11 +216,12 @@ public class PieceManager : PlayerView
         else
         {
             selectedPiece = null;
-            if(hasGameStarted)
+            if (hasGameStarted)
                 board.ResetBoardColor();
         }
 
-        if (hasGameStarted) {
+        if (hasGameStarted)
+        {
             if (selectedPiece != null && selectedPiece.TargetTile != null)
             {
                 board.GetAvailablePositionsFromPosition(selectedPiece.TargetTile);
@@ -240,14 +242,14 @@ public class PieceManager : PlayerView
         }
         else if (selectedPiece != null)
         {
-            if(tile.Piece == null)
+            if (tile.Piece == null)
             {
-                if(selectedPiece.TargetTile != null)
+                if (selectedPiece.TargetTile != null)
                 {
                     selectedPiece.MoveTo(tile, true);
                     if (hasGameStarted)
                         EndTurn(selectedPiece, tile);
-                    
+
                 }
                 else
                 {
@@ -276,7 +278,7 @@ public class PieceManager : PlayerView
 
         foreach (Piece piece in myPieces)
         {
-            if(piece.TargetTile != null)
+            if (piece.TargetTile != null)
             {
                 readyButton.interactable = true;
                 break;
@@ -296,7 +298,7 @@ public class PieceManager : PlayerView
             {
                 board.ResetBoardColor();
             }
-            if(selectedPiece != null)
+            if (selectedPiece != null)
             {
                 selectedPiece.Unselect();
                 selectedPiece = null;
@@ -395,7 +397,7 @@ public class PieceManager : PlayerView
 
     public void EndTurn(Piece piece, Tile tile)
     {
-        if(selectedPiece != null)
+        if (selectedPiece != null)
         {
             selectedPiece.Unselect();
             selectedPiece = null;
@@ -415,7 +417,7 @@ public class PieceManager : PlayerView
         if (tileList == null) return;
         int index = 0;
         Shuffle(tileList);
-        foreach(Tile tile in tileList)
+        foreach (Tile tile in tileList)
         {
             tile.Piece = null;
         }
@@ -446,7 +448,7 @@ public class PieceManager : PlayerView
     public void RPC_SendPositions(Vector2[] coordinateList, PhotonMessageInfo info)
     {
         if (PV.IsMine) return;
-        for(int c = 0; c < myPieces.Length; c++)
+        for (int c = 0; c < myPieces.Length; c++)
         {
             Vector2 coordinate = coordinateList[c];
             if (coordinate.x < 0 || coordinate.y < 0)
@@ -464,9 +466,9 @@ public class PieceManager : PlayerView
     public void MovePiece(Piece piece, Tile tile)
     {
         int pieceIndex = 0;
-        for(int c=0; c<myPieces.Length; c++)
+        for (int c = 0; c < myPieces.Length; c++)
         {
-            if(piece.ID == myPieces[c].ID)
+            if (piece.ID == myPieces[c].ID)
             {
                 pieceIndex = c;
                 break;
@@ -496,7 +498,7 @@ public class PieceManager : PlayerView
         Tile tile = Board.GetTileFromCoordinate(coordinate);
 
         piece.MoveTo(tile, true);
-        
+
     }
 
     void WinByCapture()

@@ -1,8 +1,6 @@
 
 public enum Position { 
 
-    FLAG = -1,
-
     GENERAL_5 = 13,
     GENERAL_4 = 12,
     GENERAL_3 = 11,
@@ -17,4 +15,6 @@ public enum Position {
     SERGEANT = 2,
     PRIVATE = 1,
     SPY = 0,
+
+    FLAG = -1,
 }
