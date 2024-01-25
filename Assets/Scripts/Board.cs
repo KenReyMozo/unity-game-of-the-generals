@@ -30,6 +30,7 @@ public class Board : MonoBehaviourPunCallbacks
     List<Tile> tileListBottom;
 
     Player player1, player2;
+    string player1Name, player2Name;
     PieceManager playerManager;
     [SerializeField] TextMeshProUGUI player1NameText;
     [SerializeField] TextMeshProUGUI player2NameText;
@@ -73,6 +74,7 @@ public class Board : MonoBehaviourPunCallbacks
     void Start()
     {
         InitializeBoard();
+        SetupPosition();
     }
 
     public void SetBoardPlayerManager(PieceManager manager)
@@ -109,11 +111,13 @@ public class Board : MonoBehaviourPunCallbacks
             {
                 player1 = player;
                 player1NameText.text = player1.NickName;
+                player1Name = player1.NickName;
             }
             if(index == 1)
             {
                 player2 = player;
                 player2NameText.text = player2.NickName;
+                player2Name = player2.NickName;
             }
             index++;
 
@@ -428,41 +432,40 @@ public class Board : MonoBehaviourPunCallbacks
     public void EndGameWithTopSideVictory()
     {
         OnEndGame();
-        winnerPlayerName.text = "Winner: " + player2.NickName + " !!!";
+        winnerPlayerName.text = "Winner: " + player2Name + " !!!";
         PV.RPC(nameof(RPC_OnGameEndWithTopSideVictory), RpcTarget.All);
     }
     public void EndGameWithBottomSideVictory()
     {
         OnEndGame();
-        winnerPlayerName.text = "Winner: " + player1.NickName + " !!!";
+        winnerPlayerName.text = "Winner: " + player1Name + " !!!";
+
         PV.RPC(nameof(RPC_OnGameEndWithBottomSideVictory), RpcTarget.All);
     }
 
     public void EndGameWithDraw()
     {
         OnEndGame();
-        PV.RPC(nameof(RPC_OnGameEndWithBottomSideVictory), RpcTarget.All);
+        PV.RPC(nameof(RPC_OnGameEndWithDraw), RpcTarget.All);
     }
 
     [PunRPC]
     public void RPC_OnGameEndWithTopSideVictory()
     {
         OnEndGame();
-        winnerPlayerName.text = "Winner: "+player2.NickName + " !!!";
+        winnerPlayerName.text = "Winner: "+ player2Name + " !!!";
     }   
     
     [PunRPC]
     public void RPC_OnGameEndWithBottomSideVictory()
     {
         OnEndGame();
-        winnerPlayerName.text = "Winner: "+player1.NickName+" !!!";
+        winnerPlayerName.text = "Winner: "+ player1Name + " !!!";
+    }
 
-    }    
     [PunRPC]
-
     public void RPC_OnGameEndWithDraw()
     {
-        if (!PV.IsMine) return;
         OnEndGame();
         winnerPlayerName.text = "DRAW !!!";
     }
@@ -479,5 +482,71 @@ public class Board : MonoBehaviourPunCallbacks
         {
             pieceManager.SetGameHasEnded();
         }
+    }
+
+    public Dictionary<Position, Dictionary<Position, int>> PieceMatrix { get => pieceMatrix; private set => pieceMatrix = value; }
+    private Dictionary<Position, Dictionary<Position, int>> pieceMatrix;
+
+    void SetupPosition()
+    {
+        PieceMatrix = new Dictionary<Position, Dictionary<Position, int>>();
+        foreach (Position pos in System.Enum.GetValues(typeof(Position)))
+        {
+            AddPositionMatrix(pos);
+        }
+    }
+
+    void AddPositionMatrix(Position piecePosition)
+    {
+        foreach (Position pos in System.Enum.GetValues(typeof(Position)))
+        {
+            switch (piecePosition)
+            {
+                case Position.FLAG:
+                    if (pos == Position.FLAG)
+                        AddValue(piecePosition, pos, 1);
+                    else
+                        AddValue(piecePosition, pos, -1);
+                    break;
+                case Position.SPY:
+                    if (pos == Position.PRIVATE)
+                        AddValue(piecePosition, pos, -1);
+                    else if (piecePosition == pos)
+                        AddValue(piecePosition, pos, 0);
+                    else
+                        AddValue(piecePosition, pos, 1);
+                    break;
+                case Position.PRIVATE:
+                    if (pos == Position.SPY)
+                        AddValue(piecePosition, pos, 1);
+                    else if (piecePosition == pos)
+                        AddValue(piecePosition, pos, 0);
+                    else if (pos == Position.FLAG)
+                        AddValue(piecePosition, pos, 1);
+                    else
+                        AddValue(piecePosition, pos, -1);
+                    break;
+                default:
+                    if (pos == Position.SPY)
+                        AddValue(piecePosition, pos, -1);
+                    else if (piecePosition < pos)
+                        AddValue(piecePosition, pos, -1);
+                    else if (piecePosition > pos)
+                        AddValue(piecePosition, pos, 1);
+                    else
+                        AddValue(piecePosition, pos, 0);
+                    break;
+            }
+        }
+    }
+
+    void AddValue(Position offense, Position defense, int value)
+    {
+        if (!PieceMatrix.ContainsKey(offense))
+        {
+            PieceMatrix[offense] = new Dictionary<Position, int>();
+        }
+
+        PieceMatrix[offense][defense] = value;
     }
 }

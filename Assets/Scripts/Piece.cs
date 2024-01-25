@@ -104,52 +104,23 @@ public class Piece : Interactable
     public void Fight(Piece pieceToFight, Tile tile)
     {
         bool killYourPiece = false, killEnemyPiece = false;
-        switch (Position)
+
+        int state = PM.Board.PieceMatrix[Position][pieceToFight.Position];
+
+        if(state > 0)
         {
-            case Position.SPY:
-                if(pieceToFight.Position == Position.PRIVATE)
-                    killYourPiece = true;
-                else if(pieceToFight.Position == Position.SPY)
-                {
-                    killEnemyPiece = true;
-                    killYourPiece = true;
-                }
-                else
-                    killEnemyPiece = true;
-                break;
-            case Position.PRIVATE:
-                if (pieceToFight.Position == Position.SPY)
-                    killEnemyPiece = true;
-                else if (pieceToFight.Position == Position.PRIVATE)
-                {
-                    killEnemyPiece = true;
-                    killYourPiece = true;
-                }
-                else if (Position > pieceToFight.Position)
-                    killEnemyPiece = true;
-                else
-                    killYourPiece = true;
-                break;
-            case Position.FLAG:
-                if(pieceToFight.Position == Position.FLAG)
-                    killEnemyPiece = true;
-                else
-                    killYourPiece = true;
-                break;
-            default:
-                if (pieceToFight.Position == Position.SPY)
-                    killYourPiece = true;
-                else if (Position == pieceToFight.Position)
-                {
-                    killYourPiece = true;
-                    killEnemyPiece = true;
-                }
-                else if (Position < pieceToFight.Position)
-                    killYourPiece = true;
-                else
-                    killEnemyPiece = true;
-                break;
+            killEnemyPiece = true;
         }
+        else if(state < 0)
+        {
+            killYourPiece = true;
+        }
+        else
+        {
+            killEnemyPiece = true;
+            killYourPiece = true;
+        }
+
 
         if(killYourPiece && killEnemyPiece)
         {

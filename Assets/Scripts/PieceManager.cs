@@ -523,16 +523,19 @@ public class PieceManager : PlayerView
 
     public void EndWithTopVictory()
     {
+        if (!PV.IsMine) return;
         board.EndGameWithTopSideVictory();
     }
 
     public void EndWithBottomVictory()
     {
+        if (!PV.IsMine) return;
         board.EndGameWithBottomSideVictory();
     }
 
     public void EndWithDraw()
     {
+        if (!PV.IsMine) return;
         board.EndGameWithDraw();
     }
 
