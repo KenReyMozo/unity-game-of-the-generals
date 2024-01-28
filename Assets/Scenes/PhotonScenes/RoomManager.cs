@@ -1,10 +1,13 @@
 using UnityEngine;
 using Photon.Pun;
 using System.IO;
+using UnityEngine.SceneManagement;
 
 public class RoomManager : MonoBehaviour
 {
     public static RoomManager Instance;
+
+    [SerializeField] GameObject menuPangel;
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -22,14 +25,25 @@ public class RoomManager : MonoBehaviour
         PhotonNetwork.Instantiate(Path.Combine("PhotonPrefabs", "PlayerManager"), Vector3.zero, Quaternion.identity);
     }
 
+    bool showMenu = false;
+    public void OnToggleMenu()
+    {
+        showMenu = !showMenu;
+        menuPangel.SetActive(showMenu);
+    }
+
+    public void QuitRoom()
+    {
+        PhotonNetwork.LeaveRoom();
+        SceneManager.LoadScene(SceneConstants.LOBBY_SCENE);
+    }
+
     public void ExitGame()
     {
-        // Check if the application is running in the Unity Editor
-#if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
-#else
-				// Quit the application when not in the Unity Editor
-				Application.Quit();
-#endif
+        #if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+        #else
+	        Application.Quit();
+        #endif
     }
 }

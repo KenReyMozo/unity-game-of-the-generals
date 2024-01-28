@@ -35,6 +35,15 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Escape"",
+                    ""type"": ""Button"",
+                    ""id"": ""0effc047-cdb7-4ea3-a8ae-a2847263a17c"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -59,6 +68,17 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
                     ""action"": ""Select"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""112259f5-1940-40cb-ad75-44a3d1c39986"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Escape"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -68,6 +88,7 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
         // BoardControl
         m_BoardControl = asset.FindActionMap("BoardControl", throwIfNotFound: true);
         m_BoardControl_Select = m_BoardControl.FindAction("Select", throwIfNotFound: true);
+        m_BoardControl_Escape = m_BoardControl.FindAction("Escape", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -130,11 +151,13 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
     private readonly InputActionMap m_BoardControl;
     private List<IBoardControlActions> m_BoardControlActionsCallbackInterfaces = new List<IBoardControlActions>();
     private readonly InputAction m_BoardControl_Select;
+    private readonly InputAction m_BoardControl_Escape;
     public struct BoardControlActions
     {
         private @PlayerControl m_Wrapper;
         public BoardControlActions(@PlayerControl wrapper) { m_Wrapper = wrapper; }
         public InputAction @Select => m_Wrapper.m_BoardControl_Select;
+        public InputAction @Escape => m_Wrapper.m_BoardControl_Escape;
         public InputActionMap Get() { return m_Wrapper.m_BoardControl; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -147,6 +170,9 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
             @Select.started += instance.OnSelect;
             @Select.performed += instance.OnSelect;
             @Select.canceled += instance.OnSelect;
+            @Escape.started += instance.OnEscape;
+            @Escape.performed += instance.OnEscape;
+            @Escape.canceled += instance.OnEscape;
         }
 
         private void UnregisterCallbacks(IBoardControlActions instance)
@@ -154,6 +180,9 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
             @Select.started -= instance.OnSelect;
             @Select.performed -= instance.OnSelect;
             @Select.canceled -= instance.OnSelect;
+            @Escape.started -= instance.OnEscape;
+            @Escape.performed -= instance.OnEscape;
+            @Escape.canceled -= instance.OnEscape;
         }
 
         public void RemoveCallbacks(IBoardControlActions instance)
@@ -174,5 +203,6 @@ public partial class @PlayerControl: IInputActionCollection2, IDisposable
     public interface IBoardControlActions
     {
         void OnSelect(InputAction.CallbackContext context);
+        void OnEscape(InputAction.CallbackContext context);
     }
 }

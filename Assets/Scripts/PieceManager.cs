@@ -146,6 +146,7 @@ public class PieceManager : PlayerView
         }
 
         playerControl.BoardControl.Select.performed += _ => OnSelectSomething();
+        playerControl.BoardControl.Escape.performed += _ => RoomManager.Instance.OnToggleMenu();
 
         int index = 0;
 

@@ -3,6 +3,7 @@ using UnityEngine.SceneManagement;
 using TMPro;
 using Photon.Pun;
 using System.Collections;
+using Photon.Realtime;
 
 public class ConnectToServer : MonoBehaviourPunCallbacks
 {
